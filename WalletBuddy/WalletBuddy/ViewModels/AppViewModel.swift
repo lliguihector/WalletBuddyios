@@ -8,39 +8,43 @@
 import SwiftUI
 import FirebaseAuth
 
-enum AppSate{
-    
+enum AppState {
     case loggedOut
     case loadingSkeleton
-    case loggedIn
-    
+    case loggedIn(User)
 }
 
 @MainActor
 class AppViewModel: ObservableObject {
     
+    //Shared singleton useful in UIKit/SwiftUI hybrid setups
+    static let shared = AppViewModel()
     
-    @Published var state: AppSate = .loggedOut
     
     
-    func handleLoginSuccess(user: User){
-        
+    @Published var state: AppState = .loggedOut
+    
+    func handleLoginSuccess(user: User) {
         state = .loadingSkeleton
         
-        Task{
-            try? await Task.sleep(for: .seconds(2))
+        Task {
             
-            state = .loggedIn
+            //Simulate network / data fetch delay
+            try? await Task.sleep(nanoseconds: 2*1_000_000_000)
+            
+            //TODO: Fetch additional user progile data here
+            
+            //Once done, update state to loggedIn 
+            state = .loggedIn(user)
         }
-
     }
     
-    
-    func logout(){
-        
-        
+    func logout() {
+        do {
+            try Auth.auth().signOut()
+            state = .loggedOut
+        } catch {
+            print("Logout failed: \(error.localizedDescription)")
+        }
     }
-    
-    
-    
 }

@@ -11,7 +11,7 @@ import SwiftUI
 class LoginVC: UIViewController {
 
   
-    
+    var appWindow: UIWindow?
     
     let logoImageView = UIImageView()
     let usernameTextField = WBTextField(type: .username, iconName: "person")
@@ -19,7 +19,10 @@ class LoginVC: UIViewController {
     let signInButton =  WBButton(backgroundColor: .systemGreen, title: "Sign In")
 
     let viewModel = LoginViewModel()
-    let appViewModel = AppViewModel()
+   
+    
+    
+   
   
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,7 +51,7 @@ class LoginVC: UIViewController {
         
         //Set text fields for testing
         usernameTextField.text = "lliguichuzcah@gmail.com"
-        passwordTextField.text = "Poli09"
+        passwordTextField.text = "poli09"
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -124,8 +127,23 @@ class LoginVC: UIViewController {
             SpinnerManager.shared.hide()
             
             switch result{
-            case .success:
-                showAlert(title: "Success ", message: "Logged in.")
+            case .success(let user):
+                showAlert(title: "Success ", message: "User \(user) Logged in.")
+                
+                
+                AppViewModel.shared.handleLoginSuccess(user: user)
+              
+                
+                let rootView = RootView(appViewModel: AppViewModel.shared)
+                let hostingVC = UIHostingController(rootView: rootView)
+                
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    let window = UIWindow(windowScene: scene)
+                    window.rootViewController = hostingVC
+                    window.makeKeyAndVisible()
+                    self.appWindow  = window
+                }
+                
                 
             case .failure(let message):
                 showAlert(title: "Error", message: message)

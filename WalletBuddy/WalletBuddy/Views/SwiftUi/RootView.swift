@@ -15,8 +15,9 @@ struct RootView: View {
             Text("Logged Out")
         case .loadingSkeleton:
             SkeletonView()
-        case .loggedIn:
-            MainView()
+        case .loggedIn(let user):
+            MainView(email: user.email ?? "User")
+            
         }
     }
 }
