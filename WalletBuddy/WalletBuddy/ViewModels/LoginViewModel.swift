@@ -1,0 +1,38 @@
+//
+//  LoginViewModel.swift
+//  WalletBuddy
+//
+//  Created by Hector Lliguichuzca on 7/15/25.
+//
+
+import Foundation
+import FirebaseAuth
+
+//@MainActor runs the code in the main thread no need for DispatchQue.main.async
+@MainActor
+final class LoginViewModel {
+    
+    func login(email: String?, password: String?) async -> LoginResult{
+        
+        switch LoginValidator.validate(email: email, password: password){
+        
+    case .failure(let message):
+        return .failure(message)
+        
+    case .success:
+        do{
+            
+            let user = try await AuthManager.shared.login(email: email!, password: password!)
+            return .success(user)
+        }catch{
+            return .failure(error.localizedDescription)
+        }
+  
+    }
+     
+}
+}
+enum LoginResult{
+    case success(User)
+    case failure(String)
+}
