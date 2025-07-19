@@ -8,7 +8,7 @@ import Foundation
 
 protocol AuthenticationService {
     
-    func login(email: String, password: String)async throws -> String
+    func login(email: String, password: String)async throws -> AppUser
     
     
     func logout() throws

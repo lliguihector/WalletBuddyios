@@ -12,6 +12,17 @@ import FirebaseAuth
 @MainActor
 final class LoginViewModel {
     
+    
+    
+    private let authService: AuthenticationService
+    
+    //Inject auth service
+    init(authService: AuthenticationService){
+        self.authService = authService
+    }
+    
+    
+    
     func login(email: String?, password: String?) async -> LoginResult{
         
         switch LoginValidator.validate(email: email, password: password){
@@ -22,7 +33,7 @@ final class LoginViewModel {
     case .success:
         do{
             
-            let user = try await AuthManager.shared.login(email: email!, password: password!)
+            let user = try await authService.login(email: email!, password: password!)
             return .success(user)
         }catch{
             return .failure(error.localizedDescription)
@@ -33,6 +44,6 @@ final class LoginViewModel {
 }
 }
 enum LoginResult{
-    case success(User)
+    case success(AppUser)
     case failure(String)
 }

@@ -19,7 +19,7 @@ class AppViewModel: ObservableObject {
     
     @Published var state: AppState = .loggedOut
     
-    func handleLoginSuccess(user: User) {
+    func handleLoginSuccess(user: AppUser) {
         state = .loadingSkeleton
         
         Task {

@@ -7,9 +7,16 @@
 
 import UIKit
 import SwiftUI
+import Firebase
 
 class LoginVC: UIViewController {
 
+    //Inject AuthFirebaseManager into LoginViewModel
+    private var authManager = FirebaseAuthManager()
+    private lazy var viewModel = LoginViewModel(authService:  authManager)
+    
+    
+    
   
     var appWindow: UIWindow?
     
@@ -18,7 +25,7 @@ class LoginVC: UIViewController {
     let passwordTextField = WBTextField(type: .password, iconName: "lock")
     let signInButton =  WBButton(backgroundColor: .systemGreen, title: "Sign In")
 
-    let viewModel = LoginViewModel()
+    
    
     
     

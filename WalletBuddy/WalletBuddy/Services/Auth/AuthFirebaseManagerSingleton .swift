@@ -7,10 +7,10 @@
 
 import FirebaseAuth
 
-class AuthManager {
+class AuthFirebaseManagerSingleton {
     
-    //Makes AuthManager a singleton class 
-    static let shared = AuthManager()
+    //Makes AuthManager a singleton class
+    static let shared = AuthFirebaseManagerSingleton()
     private init() {}
 
     func login(email: String, password: String) async throws -> User {
