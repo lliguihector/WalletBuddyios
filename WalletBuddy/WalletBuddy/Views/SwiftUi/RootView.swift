@@ -16,7 +16,7 @@ struct RootView: View {
         case .loadingSkeleton:
             SkeletonView()
         case .loggedIn(let user):
-            MainView(email: user.email)
+            MainView(user: user)
             
         }
     }

@@ -9,14 +9,17 @@ import SwiftUI
 import FirebaseAuth
 
 struct MainView: View {
-    let email: String
+  
+    let user: AppUser
 
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        Text("Welcome! \(email)")
+        Text("Welcome!")
+        Text("your email is: \(user.email)")
+        Text("your user uid is: \(user.id)")
     }
 }
 
 #Preview {
-    MainView(email: "mock@example.com")
+    MainView(user: AppUser(id: "12345", email: "test@example.com"))
 }
