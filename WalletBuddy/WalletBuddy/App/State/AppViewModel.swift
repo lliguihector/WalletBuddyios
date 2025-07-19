@@ -25,9 +25,9 @@ class AppViewModel: ObservableObject {
         Task {
             
             //Simulate network / data fetch delay
-            try? await Task.sleep(nanoseconds: 2*1_000_000_000)
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             
-            //TODO: Fetch additional user progile data here
+            //TODO: Fetch additional user profile data here
             
             //Once done, update state to loggedIn 
             state = .loggedIn(user)

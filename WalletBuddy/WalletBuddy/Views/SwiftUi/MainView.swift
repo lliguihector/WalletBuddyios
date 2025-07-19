@@ -13,10 +13,23 @@ struct MainView: View {
     let user: AppUser
 
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        Text("Welcome!")
-        Text("your email is: \(user.email)")
-        Text("your user uid is: \(user.id)")
+        VStack(spacing: 16)
+        {
+            Image("logo")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 100, height: 100)
+                .clipShape(Circle())
+                .overlay(
+                    Circle().stroke(Color.white, lineWidth: 4)
+                )
+                .shadow(radius: 7)
+            Text("your email is: \(user.email)")
+            Text("your user uid is: \(user.id)")
+            
+            Spacer()
+        }
+        .padding()
     }
 }
 
