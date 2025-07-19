@@ -8,11 +8,6 @@
 import SwiftUI
 import FirebaseAuth
 
-enum AppState {
-    case loggedOut
-    case loadingSkeleton
-    case loggedIn(User)
-}
 
 @MainActor
 class AppViewModel: ObservableObject {
