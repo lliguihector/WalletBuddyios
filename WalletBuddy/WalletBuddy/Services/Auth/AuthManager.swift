@@ -8,6 +8,8 @@
 import FirebaseAuth
 
 class AuthManager {
+    
+    //Makes AuthManager a singleton class 
     static let shared = AuthManager()
     private init() {}
 
