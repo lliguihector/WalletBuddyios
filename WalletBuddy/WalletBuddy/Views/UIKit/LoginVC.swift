@@ -135,13 +135,13 @@ class LoginVC: UIViewController {
             
             switch result{
             case .success(let user):
-                showAlert(title: "Success ", message: "User \(user) Logged in.")
+//                showAlert(title: "Success ", message: "User \(user) Logged in.")
                 
                 
                 AppViewModel.shared.handleLoginSuccess(user: user)
               
                 
-                let rootView = RootView(appViewModel: AppViewModel.shared)
+                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter())
                 let hostingVC = UIHostingController(rootView: rootView)
                 
                 if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {

@@ -38,6 +38,7 @@ class AppViewModel: ObservableObject {
         do {
             try Auth.auth().signOut()
             state = .loggedOut
+            NavigationRouter.shared.popToRoot()
         } catch {
             print("Logout failed: \(error.localizedDescription)")
         }

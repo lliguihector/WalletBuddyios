@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct LoginOptionsView: View {
+    @EnvironmentObject var navigationRouter: NavigationRouter
+    
+    
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -28,7 +31,11 @@ struct LoginOptionsView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
             }
-            NavigationLink(destination: LogInVCWrapper()) {
+            
+            
+            Button(action: {
+                navigationRouter.push(.loginEmail)
+            }) {
                 HStack {
                     Image(systemName: "envelope")
                     Text("Continue with Email")

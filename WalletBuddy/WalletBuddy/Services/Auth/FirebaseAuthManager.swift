@@ -18,6 +18,9 @@ final class FirebaseAuthManager: AuthenticationService{
         let email = result.user.email ?? ""
         
         
+        
+        
+        
         return AppUser(id: userID, email: email)
         
     }

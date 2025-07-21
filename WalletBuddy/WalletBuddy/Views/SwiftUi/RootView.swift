@@ -7,12 +7,15 @@
 import SwiftUI
 
 struct RootView: View {
-    @ObservedObject var appViewModel: AppViewModel
-
+    
+    @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var navigationRouter: NavigationRouter
+    
+    
     var body: some View {
         switch appViewModel.state {
         case .loggedOut:
-            Text("Logged Out")
+            LoginOptionsView()
         case .loadingSkeleton:
             SkeletonView()
         case .loggedIn(let user):

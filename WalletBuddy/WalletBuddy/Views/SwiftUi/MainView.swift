@@ -11,6 +11,9 @@ import FirebaseAuth
 struct MainView: View {
   
     let user: AppUser
+    
+    @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var navigationRouter: NavigationRouter
 
     var body: some View {
         VStack(spacing: 16)
@@ -26,6 +29,10 @@ struct MainView: View {
                 .shadow(radius: 7)
             Text("your email is: \(user.email)")
             Text("your user uid is: \(user.id)")
+            Button("Logout"){
+                appViewModel.logout()
+//                navigationRouter.popToRoot() //no need to call it here sinc elogout does it
+            }
             
             Spacer()
         }
