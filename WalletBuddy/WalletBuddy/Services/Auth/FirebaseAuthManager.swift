@@ -8,7 +8,7 @@ import FirebaseAuth
 
 
 final class FirebaseAuthManager: AuthenticationService{
-    
+
     
     func login(email: String, password: String) async throws -> AppUser {
         let result = try await Auth.auth().signIn(withEmail: email, password: password)
@@ -43,6 +43,7 @@ final class FirebaseAuthManager: AuthenticationService{
     }
     
     
+ 
     
     
     

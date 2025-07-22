@@ -47,7 +47,7 @@ import UIKit
             
             switch type {
             case .username:
-                placeholder = "Username"
+                placeholder = "name@example.com"
                 isSecureTextEntry = false
                 keyboardType = .default
                 returnKeyType = .next

@@ -21,9 +21,11 @@ class LoginVC: UIViewController {
     var appWindow: UIWindow?
     
     let logoImageView = UIImageView()
+    let usernameLabel = WBLabel(title: "Email")
     let usernameTextField = WBTextField(type: .username, iconName: "person")
+    let passwordlabel = WBLabel(title: "Password")
     let passwordTextField = WBTextField(type: .password, iconName: "lock")
-    let signInButton =  WBButton(backgroundColor: .systemGreen, title: "Sign In")
+    let signInButton =  WBButton(backgroundColor: .systemMint, title: "Sign In")
 
     
    
@@ -50,7 +52,9 @@ class LoginVC: UIViewController {
         
         //UI Configurations
         configureLogoImageView()
+        configureUsernameLabel()
         configureUserNameTextField()
+        configurePasswordlabel()
         configurePasswordTextField()
         createDismissKeyboardTapGesture()
         configureSignInButton()
@@ -73,28 +77,57 @@ class LoginVC: UIViewController {
     func configureLogoImageView(){
             view.addSubview(logoImageView)
             logoImageView.translatesAutoresizingMaskIntoConstraints = false
-            logoImageView.image = UIImage(named: "robot")
+            logoImageView.image = UIImage(named: "logo")
             NSLayoutConstraint.activate([
                 logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2),
                 logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                logoImageView.heightAnchor.constraint(equalToConstant: 200),
-                logoImageView.widthAnchor.constraint(equalToConstant: 200)
+                logoImageView.heightAnchor.constraint(equalToConstant: 60),
+                logoImageView.widthAnchor.constraint(equalToConstant: 60)
             ])}
+    
+    
+    //username Label
+    func configureUsernameLabel(){
+        view.addSubview(usernameLabel)
+        NSLayoutConstraint.activate([
+            usernameLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 16),
+            usernameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+        ])
+        
+    }
+    
+    
     //Username TextField Placement
     func configureUserNameTextField(){
         view.addSubview(usernameTextField)
         NSLayoutConstraint.activate([
-            usernameTextField.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 18),
+            usernameTextField.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: 8),
             usernameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             usernameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             usernameTextField.heightAnchor.constraint(equalToConstant: 50)
         ])}
+    
+    
+    //Password label
+    func configurePasswordlabel(){
+        view.addSubview(passwordlabel)
+        NSLayoutConstraint.activate([
+            passwordlabel.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 8),
+            passwordlabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+        ])
+        
+        
+        
+    }
+    
+    
+    
     //Password Text Field Placement
     func configurePasswordTextField(){
         view.addSubview(passwordTextField)
         NSLayoutConstraint.activate([
             
-            passwordTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 16),
+            passwordTextField.topAnchor.constraint(equalTo: passwordlabel.bottomAnchor, constant: 8),
             passwordTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             passwordTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50)
