@@ -15,10 +15,11 @@ final class LoginViewModel {
     
     
     private let authService: AuthenticationService
-    
+    private let userRepository: UserRepository
     //Inject auth service
-    init(authService: AuthenticationService){
+    init(authService: AuthenticationService, userRepository: UserRepository){
         self.authService = authService
+        self.userRepository = userRepository
     }
     
     
@@ -34,6 +35,10 @@ final class LoginViewModel {
         do{
             
             let user = try await authService.login(email: email!, password: password!)
+            
+            //Save to Core Data
+          userRepository.createUser(from: user)
+            
             return .success(user)
         }catch{
             return .failure(error.localizedDescription)

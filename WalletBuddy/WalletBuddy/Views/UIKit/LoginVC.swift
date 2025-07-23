@@ -13,9 +13,22 @@ class LoginVC: UIViewController {
 
     //Inject AuthFirebaseManager into LoginViewModel
     private var authManager = FirebaseAuthManager()
-    private lazy var viewModel = LoginViewModel(authService:  authManager)
+    private var userRepositry = UserRepository()
+
+    private lazy var viewModel = LoginViewModel(authService:  authManager, userRepository: userRepositry)
     
     
+    //Inject using DependencyContainer
+//    private let dependencyContainer =  DependencyContainer()
+//    private var viewModel: LoginViewModel!
+
+    //Add the following in View did Load
+//    Task{@MainActor in
+//        self.viewModel = dependencyContainer.makeLoginViewModel()
+//    }
+//    
+//    
+
     
   
     var appWindow: UIWindow?

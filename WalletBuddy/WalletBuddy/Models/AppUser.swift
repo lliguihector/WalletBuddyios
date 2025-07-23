@@ -12,8 +12,3 @@ struct AppUser: Identifiable,Codable{
     let email: String
 }
 
-//extension AppUser{
-//    init(from user: User){
-//        self.id = user.uid
-//    }
-//}
