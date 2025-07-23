@@ -11,6 +11,11 @@ import Firebase
 @main
 struct MyApp: App {
 
+    
+    
+    //Inject Managed Object Context into SwiftUI
+    
+    let persistenceController = PersistenceController.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appViewModel = AppViewModel.shared
     @StateObject private var navigationRouter = NavigationRouter.shared
@@ -21,6 +26,7 @@ struct MyApp: App {
             WindowGroup{
                 NavigationStack(path: $navigationRouter.path){
                     RootView()
+                        .environment(\.managedObjectContext,persistenceController.container.viewContext)
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
                         .navigationDestination(for: AppRoute.self){ route in
