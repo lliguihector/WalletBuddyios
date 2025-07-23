@@ -10,6 +10,7 @@
 		2970D9202E26185F00ACDD63 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 2970D91F2E26185F00ACDD63 /* FirebaseAuth */; };
 		2970DA702E2F759F00ACDD63 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2970DA6F2E2F759F00ACDD63 /* GoogleSignIn */; };
 		2970DA722E2F759F00ACDD63 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2970DA712E2F759F00ACDD63 /* GoogleSignInSwift */; };
+		2970DA7C2E3144D800ACDD63 /* WalletBuddy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2970DA7A2E3144D800ACDD63 /* WalletBuddy.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		2970D8902DF3FF6E00ACDD63 /* WalletBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2970D90A2E2564D600ACDD63 /* WalletBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2970DA7B2E3144D800ACDD63 /* WalletBuddy.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WalletBuddy.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -77,6 +79,7 @@
 		2970D8872DF3FF6E00ACDD63 = {
 			isa = PBXGroup;
 			children = (
+				2970DA7A2E3144D800ACDD63 /* WalletBuddy.xcdatamodeld */,
 				2970D8922DF3FF6E00ACDD63 /* WalletBuddy */,
 				2970D90B2E2564D600ACDD63 /* WalletBuddyUITests */,
 				2970D8912DF3FF6E00ACDD63 /* Products */,
@@ -208,6 +211,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2970DA7C2E3144D800ACDD63 /* WalletBuddy.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,6 +516,19 @@
 			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		2970DA7A2E3144D800ACDD63 /* WalletBuddy.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2970DA7B2E3144D800ACDD63 /* WalletBuddy.xcdatamodel */,
+			);
+			currentVersion = 2970DA7B2E3144D800ACDD63 /* WalletBuddy.xcdatamodel */;
+			path = WalletBuddy.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 2970D8882DF3FF6E00ACDD63 /* Project object */;
 }

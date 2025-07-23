@@ -7,16 +7,15 @@
 
 import SwiftUI
 import Firebase
-
+//App Entry Point
 @main
 struct MyApp: App {
 
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appViewModel = AppViewModel.shared
     @StateObject private var navigationRouter = NavigationRouter.shared
 
-    init(){
-        FirebaseApp.configure()
-    }
+
     
     var body: some Scene {
             WindowGroup{
