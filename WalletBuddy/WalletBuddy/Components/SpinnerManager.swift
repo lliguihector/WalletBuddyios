@@ -49,5 +49,6 @@ final class SpinnerManager {
     func hide() {
         spinnerWindow?.isHidden = true
         spinnerWindow = nil
+        print("❌  Hide Spinner")
     }
 }

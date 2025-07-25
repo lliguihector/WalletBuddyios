@@ -7,9 +7,12 @@
 import CoreData
 
 final class UserRepository {
+    
+    
+    static let shared = UserRepository()
     private let context: NSManagedObjectContext
 
-    init(context: NSManagedObjectContext = PersistenceController.shared.context) {
+   private init(context: NSManagedObjectContext = PersistenceController.shared.context) {
         self.context = context
     }
 

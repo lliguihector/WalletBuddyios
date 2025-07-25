@@ -15,21 +15,30 @@ class NavigationRouter: ObservableObject{
     
     func push (_ route: AppRoute){
         path.append(route)
+        
+        print("Navigation Stack: \(path.count)")
+        print("Array: \(path)")
     }
 
     func pop(){
         if !path.isEmpty{
             path.removeLast()
         }
+        print("Navigation Stack: \(path.count)")
+        print("Array: \(path)")
     }
     
     func popToRoot(){
         path.removeAll()
+        print("Navigation Stack: \(path.count)")
+        print("Array: \(path)")
     }
     
     func replace(with route: AppRoute){
         path = [route]
     }
 
+    
+    
     
 }

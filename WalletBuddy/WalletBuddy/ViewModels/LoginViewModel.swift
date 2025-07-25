@@ -15,11 +15,10 @@ final class LoginViewModel {
     
     
     private let authService: AuthenticationService
-    private let userRepository: UserRepository
+
     //Inject auth service
-    init(authService: AuthenticationService, userRepository: UserRepository){
+    init(authService: AuthenticationService = FirebaseAuthManager.shared){
         self.authService = authService
-        self.userRepository = userRepository
     }
     
     
@@ -42,8 +41,8 @@ final class LoginViewModel {
             
             let user = try await authService.login(email: email!, password: password!)
             AppViewModel.shared.handleLoginSuccess(user: user)
-            //Save to Core Data
-          userRepository.createUser(from: user)
+            
+            
             
             return .success
         }catch{

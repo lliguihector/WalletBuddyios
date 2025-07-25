@@ -7,7 +7,7 @@
 
 final class DependencyContainer{
     let authService: AuthenticationService
-    let userRepository: UserRepository
+
    
     
     
@@ -16,7 +16,7 @@ final class DependencyContainer{
         
         //Use your shared or new instances here
         self.authService = FirebaseAuthManager.shared
-        self.userRepository = UserRepository()
+ 
     }
     
   
@@ -24,7 +24,7 @@ final class DependencyContainer{
     
     @MainActor
     func makeLoginViewModel() -> LoginViewModel{
-     return LoginViewModel(authService: authService, userRepository: userRepository)
+     return LoginViewModel(authService: authService)
     }
     
     

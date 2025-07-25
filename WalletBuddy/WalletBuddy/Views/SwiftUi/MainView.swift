@@ -32,7 +32,9 @@ struct MainView: View {
                 Text("your user uid is: \(user.id)")
                 Text("Internet Connectivity: \(networkMonitor.isConnected)")
                 Button("Logout") {
+                    
                     appViewModel.logout()
+                    NavigationRouter.shared.popToRoot()
                   
                 }
                 

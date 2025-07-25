@@ -12,10 +12,9 @@ import Firebase
 class LoginVC: UIViewController {
 
     //Inject AuthFirebaseManager into LoginViewModel
-    private var authManager = FirebaseAuthManager.shared
-    private var userRepositry = UserRepository()
 
-    private lazy var viewModel = LoginViewModel(authService:  authManager, userRepository: userRepositry)
+
+    private lazy var viewModel = LoginViewModel()
     
     
     //Inject using DependencyContainer
