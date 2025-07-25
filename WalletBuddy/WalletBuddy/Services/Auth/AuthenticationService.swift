@@ -13,9 +13,10 @@ protocol AuthenticationService {
     
     func logout() throws
     
-    func isUserLoggedIn() -> Bool
+    // func isUserLoggedIn() -> Bool
+    // func getUserId() -> String?
     
-    func getUserId() -> String?
+    func getCurrentUser() -> AppUser?
     
     func getIDToken(forceRefresh: Bool)async throws -> String?
     
