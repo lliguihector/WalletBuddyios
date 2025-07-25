@@ -15,9 +15,25 @@ class AppViewModel: ObservableObject {
     //Shared singleton useful in UIKit/SwiftUI hybrid setups
     static let shared = AppViewModel()
     
-    
-    
     @Published var state: AppState = .loggedOut
+
+  //static let shared = AppViewModel(authService: FireBaseAuthManager())
+    
+   //private let authService: AuthenticationService 
+
+    //init(authService: AuthenticatonService){
+        self.authService = authService
+    }
+
+//Call this on app launch to check for an existing user session
+    func initializeSession(){
+        if let user = authService.getCurrentUser(){
+            handleLoginSuccess(user: user)
+        }else{
+            state = .loggedOut
+        }
+    }
+    
     
     func handleLoginSuccess(user: AppUser) {
         state = .loadingSkeleton
