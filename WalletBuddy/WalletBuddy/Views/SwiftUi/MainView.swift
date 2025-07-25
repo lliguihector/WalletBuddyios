@@ -31,7 +31,7 @@ struct MainView: View {
             Text("your user uid is: \(user.id)")
             Button("Logout"){
                 appViewModel.logout()
-//                navigationRouter.popToRoot() //no need to call it here sinc elogout does it
+//                navigationRouter.popToRoot()
             }
             
             Spacer()

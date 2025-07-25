@@ -12,16 +12,15 @@ import FirebaseAuth
 @MainActor
 class AppViewModel: ObservableObject {
     
-    //Shared singleton useful in UIKit/SwiftUI hybrid setups
     static let shared = AppViewModel()
     
+    //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
 
-  //static let shared = AppViewModel(authService: FireBaseAuthManager())
     
-   //private let authService: AuthenticationService 
+   private let authService: AuthenticationService 
 
-    //init(authService: AuthenticatonService){
+    init(authService: AuthenticationService = FirebaseAuthManager.shared){
         self.authService = authService
     }
 
@@ -52,7 +51,7 @@ class AppViewModel: ObservableObject {
     
     func logout() {
         do {
-            try Auth.auth().signOut()
+            try authService.logout()
             state = .loggedOut
             NavigationRouter.shared.popToRoot()
         } catch {

@@ -12,7 +12,7 @@ import Firebase
 class LoginVC: UIViewController {
 
     //Inject AuthFirebaseManager into LoginViewModel
-    private var authManager = FirebaseAuthManager()
+    private var authManager = FirebaseAuthManager.shared
     private var userRepositry = UserRepository()
 
     private lazy var viewModel = LoginViewModel(authService:  authManager, userRepository: userRepositry)
@@ -180,22 +180,10 @@ class LoginVC: UIViewController {
             SpinnerManager.shared.hide()
             
             switch result{
-            case .success(let user):
-//                showAlert(title: "Success ", message: "User \(user) Logged in.")
-                
-                
-                AppViewModel.shared.handleLoginSuccess(user: user)
+            case .success:
               
+                SceneCoordinator.shared.setRoot(RootView())
                 
-                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter())
-                let hostingVC = UIHostingController(rootView: rootView)
-                
-                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                    let window = UIWindow(windowScene: scene)
-                    window.rootViewController = hostingVC
-                    window.makeKeyAndVisible()
-                    self.appWindow  = window
-                }
                 
                 
             case .failure(let message):

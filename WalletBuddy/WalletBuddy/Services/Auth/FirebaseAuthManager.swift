@@ -8,6 +8,12 @@ import FirebaseAuth
 
 final class FirebaseAuthManager: AuthenticationService{
     
+    
+    static let shared = FirebaseAuthManager()
+    
+    private init(){}
+    
+    
     func login(email: String, password: String) async throws -> AppUser {
         let result = try await Auth.auth().signIn(withEmail: email, password: password)
         
@@ -21,15 +27,7 @@ final class FirebaseAuthManager: AuthenticationService{
         try Auth.auth().signOut()
     }
     
-    // func isUserLoggedIn() -> Bool {
-    //     return Auth.auth().currentUser != nil
-    // }
-    
-    // func getUserId() -> String? {
-    //     return Auth.auth().currentUser?.uid
-        
-    // }
-
+ 
     func getCurrentUser() -> AppUser?{
 
         guard let user = Auth.auth().currentUser
@@ -37,7 +35,7 @@ final class FirebaseAuthManager: AuthenticationService{
             return nil
         }
 
-        return AppUser(id: user.uid, email: user.email, "")
+        return AppUser(id: user.uid, email: user.email ?? "")
     }
     
     func getIDToken(forceRefresh: Bool) async throws -> String? {

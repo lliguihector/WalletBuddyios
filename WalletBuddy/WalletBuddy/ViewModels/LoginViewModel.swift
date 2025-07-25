@@ -23,8 +23,14 @@ final class LoginViewModel {
     }
     
     
-    
     func login(email: String?, password: String?) async -> LoginResult{
+        
+        
+        
+        
+        
+        
+        
         
         switch LoginValidator.validate(email: email, password: password){
         
@@ -35,11 +41,11 @@ final class LoginViewModel {
         do{
             
             let user = try await authService.login(email: email!, password: password!)
-            
+            AppViewModel.shared.handleLoginSuccess(user: user)
             //Save to Core Data
           userRepository.createUser(from: user)
             
-            return .success(user)
+            return .success
         }catch{
             return .failure(error.localizedDescription)
         }
@@ -49,6 +55,6 @@ final class LoginViewModel {
 }
 }
 enum LoginResult{
-    case success(AppUser)
+    case success
     case failure(String)
 }

@@ -15,7 +15,7 @@ final class DependencyContainer{
        
         
         //Use your shared or new instances here
-        self.authService = FirebaseAuthManager()
+        self.authService = FirebaseAuthManager.shared
         self.userRepository = UserRepository()
     }
     

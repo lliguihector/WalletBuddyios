@@ -12,25 +12,29 @@ import Firebase
 struct MyApp: App {
 
     
-    
     //Inject Managed Object Context into SwiftUI
     
     let persistenceController = PersistenceController.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var appViewModel = AppViewModel.shared
-    @StateObject private var navigationRouter = NavigationRouter.shared
+    
+    //@ObserevedObject hears the change notification of @Publish
+    @ObservedObject private var appViewModel = AppViewModel.shared
+    @ObservedObject private var navigationRouter = NavigationRouter.shared
 
 
     
     var body: some Scene {
             WindowGroup{
                 NavigationStack(path: $navigationRouter.path){
-                    RootView()
+                    RootView()//Entry Point View
                         .environment(\.managedObjectContext,persistenceController.container.viewContext)
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
                         .navigationDestination(for: AppRoute.self){ route in
                             route.view
+                        }
+                        .task{
+                            appViewModel.initializeSession()
                         }
                 }
             }
