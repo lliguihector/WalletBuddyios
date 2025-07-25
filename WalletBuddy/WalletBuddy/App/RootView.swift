@@ -10,9 +10,11 @@ struct RootView: View {
     
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var navigationRouter: NavigationRouter
+    @EnvironmentObject var networkMonitor: NetworkMonitor
     
     
     var body: some View {
+
         switch appViewModel.state {
         case .loggedOut:
             LoginOptionsView()
@@ -23,4 +25,6 @@ struct RootView: View {
             
         }
     }
+      
+
 }

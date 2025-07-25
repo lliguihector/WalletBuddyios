@@ -18,8 +18,9 @@ struct MyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     //@ObserevedObject hears the change notification of @Publish
-    @ObservedObject private var appViewModel = AppViewModel.shared
-    @ObservedObject private var navigationRouter = NavigationRouter.shared
+    @StateObject private var appViewModel = AppViewModel.shared
+    @StateObject private var navigationRouter = NavigationRouter.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared
 
 
     
@@ -30,6 +31,7 @@ struct MyApp: App {
                         .environment(\.managedObjectContext,persistenceController.container.viewContext)
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
+                        .environmentObject(networkMonitor)
                         .navigationDestination(for: AppRoute.self){ route in
                             route.view
                         }

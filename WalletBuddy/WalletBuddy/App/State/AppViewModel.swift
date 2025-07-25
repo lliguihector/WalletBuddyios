@@ -44,7 +44,9 @@ class AppViewModel: ObservableObject {
             
             //TODO: Fetch additional user profile data here
             
-            //Once done, update state to loggedIn 
+            //Once done, update state to loggedIn
+            
+            print("Setting state to logIn")
             state = .loggedIn(user)
         }
     }
@@ -52,6 +54,7 @@ class AppViewModel: ObservableObject {
     func logout() {
         do {
             try authService.logout()
+            print("Setting state to logOut")
             state = .loggedOut
             NavigationRouter.shared.popToRoot()
         } catch {

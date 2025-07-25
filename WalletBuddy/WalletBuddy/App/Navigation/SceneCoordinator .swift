@@ -23,6 +23,7 @@ final class SceneCoordinator {
         let rootView = view
             .environmentObject(AppViewModel.shared)
             .environmentObject(NavigationRouter.shared)
+            .environmentObject(NetworkMonitor.shared)
 
         let hostingVC = UIHostingController(rootView: rootView)
 

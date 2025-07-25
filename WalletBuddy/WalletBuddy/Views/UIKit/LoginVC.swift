@@ -182,7 +182,16 @@ class LoginVC: UIViewController {
             switch result{
             case .success:
               
-                SceneCoordinator.shared.setRoot(RootView())
+                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter.shared).environmentObject(NetworkMonitor.shared)
+                   let hostingVC = UIHostingController(rootView: rootView)
+                   
+                   if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                       let window = UIWindow(windowScene: scene)
+                       window.rootViewController = hostingVC
+                       window.makeKeyAndVisible()
+                       self.appWindow  = window
+                   }
+
                 
                 
                 
