@@ -6,36 +6,38 @@
 //
 import FirebaseAuth
 
-
 final class FirebaseAuthManager: AuthenticationService{
-
     
     func login(email: String, password: String) async throws -> AppUser {
         let result = try await Auth.auth().signIn(withEmail: email, password: password)
         
-        
         let userID = result.user.uid
         let email = result.user.email ?? ""
-        
-        
-        
-        
-        
-        return AppUser(id: userID, email: email)
-        
+
+        return AppUser(id: userID, email: email)    
     }
     
     func logout() throws {
         try Auth.auth().signOut()
     }
     
-    func isUserLoggedIn() -> Bool {
-        return Auth.auth().currentUser != nil
-    }
+    // func isUserLoggedIn() -> Bool {
+    //     return Auth.auth().currentUser != nil
+    // }
     
-    func getUserId() -> String? {
-        return Auth.auth().currentUser?.uid
+    // func getUserId() -> String? {
+    //     return Auth.auth().currentUser?.uid
         
+    // }
+
+    func getCurrentUser() -> AppUser?{
+
+        guard let user = Auth.auth().currentUser
+        else{
+            return nil
+        }
+
+        return AppUser(id: user.uid, email: user.email, "")
     }
     
     func getIDToken(forceRefresh: Bool) async throws -> String? {
