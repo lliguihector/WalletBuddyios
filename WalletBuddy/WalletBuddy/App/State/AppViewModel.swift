@@ -12,7 +12,7 @@ import FirebaseAuth
 @MainActor
 class AppViewModel: ObservableObject {
     
-    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, userRepository: UserRepository.shared)
+    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared)
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
@@ -23,11 +23,15 @@ class AppViewModel: ObservableObject {
     
    private let userRepository: UserRepository
    private let authService: AuthenticationService
+   private let apiService: ApiService   
 
-    init(authService: AuthenticationService , userRepository: UserRepository){
+    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository){
         self.authService = authService
         self.userRepository = userRepository
+        self.apiService = apiService
     }
+    
+    
 
 //Call this on app launch to check for an existing user session
     func initializeSession(){
@@ -47,14 +51,31 @@ class AppViewModel: ObservableObject {
             //Simulate network / data fetch delay
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             
+            //Get Firebase ID token
+            guard let idToken = try await authService.getIDToken(forceRefresh: false)else{
+                
+                print("❌ Faild to get Firebase ID Token")
+                return
+            }
+            
+            //Call API to verify user
+            let isNewUser = apiService.verifyUser(with_: idToken)
+            
+            if isNewUser{
+                print("New User detected")
+                
+            }else{
+                print("Returning user")
+            }
+            
+            
             //Save user to Core Data here
 //            userRepository.createUser(from: user)
             
             
-            //TODO: Fetch additional user profile data here
+            //TODO: Fetch additional user profile data here graphql
             
             //Once done, update state to loggedIn
-            
             print("App State: loged In")
             state = .loggedIn(user)
         }

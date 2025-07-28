@@ -44,6 +44,8 @@ struct MainView: View {
             .disabled(!networkMonitor.isConnected) // Disable interaction when offline
             .opacity(networkMonitor.isConnected ? 1 : 0.5) // Optional visual cue
             
+            
+            //Disables View when internet isnt connected
             if !networkMonitor.isConnected {
                 offlineView()
                     .transition(.opacity)

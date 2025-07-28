@@ -11,5 +11,6 @@ enum AppState {
     case loggedOut
     case loadingSkeleton
     case loggedIn(AppUser)
+    case onboarding
 }
 

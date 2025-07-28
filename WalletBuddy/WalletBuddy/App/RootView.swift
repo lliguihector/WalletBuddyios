@@ -22,6 +22,9 @@ struct RootView: View {
             SkeletonView()
         case .loggedIn(let user):
             MainView(user: user)
+        case.onboarding:
+        //Display Onboarding ui
+            OnboardingView()
             
         }
     }
