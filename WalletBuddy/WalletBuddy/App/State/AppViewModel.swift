@@ -58,11 +58,15 @@ class AppViewModel: ObservableObject {
                 return
             }
             
+        
+            
+            print("API Token: \(idToken)")
+            
             //Call API to verify user
-            let isNewUser = apiService.verifyUser(with_: idToken)
+            let isNewUser = await apiService.verifyUser(withToken: idToken)
             
             if isNewUser{
-                print("New User detected")
+                print("New User detected and created for the first time ...")
                 
             }else{
                 print("Returning user")

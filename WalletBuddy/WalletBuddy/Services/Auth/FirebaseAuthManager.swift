@@ -31,6 +31,7 @@ final class FirebaseAuthManager: AuthenticationService{
     func getCurrentUser() -> AppUser?{
 
         guard let user = Auth.auth().currentUser
+                
         else{
             return nil
         }

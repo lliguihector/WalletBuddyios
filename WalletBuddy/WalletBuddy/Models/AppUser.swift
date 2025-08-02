@@ -10,5 +10,6 @@ import FirebaseAuth
 struct AppUser: Identifiable,Codable{
     let id: String    //Firebase UID
     let email: String
+    
 }
 
