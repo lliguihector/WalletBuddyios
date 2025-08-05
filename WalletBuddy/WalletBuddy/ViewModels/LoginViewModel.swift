@@ -12,8 +12,6 @@ import FirebaseAuth
 @MainActor
 final class LoginViewModel {
     
-    
-    
     private let authService: AuthenticationService
 
     //Inject auth service
@@ -21,16 +19,9 @@ final class LoginViewModel {
         self.authService = authService
     }
     
-    
     func login(email: String?, password: String?) async -> LoginResult{
         
-        
-        
-        
-        
-        
-        
-        
+
         switch LoginValidator.validate(email: email, password: password){
         
     case .failure(let message):
@@ -39,8 +30,10 @@ final class LoginViewModel {
     case .success:
         do{
             
-            let user = try await authService.login(email: email!, password: password!)
-            AppViewModel.shared.handleLoginSuccess(user: user)
+            try await authService.login(email: email!, password: password!)
+            
+            
+            AppViewModel.shared.handleLoginSuccess()
             
             
             

@@ -21,6 +21,7 @@ struct MyApp: App {
     @StateObject private var appViewModel = AppViewModel.shared
     @StateObject private var navigationRouter = NavigationRouter.shared
     @StateObject private var networkMonitor = NetworkMonitor.shared
+    @StateObject private var userViewModel = UserViewModel.shared
 
 
     
@@ -32,6 +33,7 @@ struct MyApp: App {
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
                         .environmentObject(networkMonitor)
+                        .environmentObject(userViewModel)
                         .navigationDestination(for: AppRoute.self){ route in
                             route.view
                         }

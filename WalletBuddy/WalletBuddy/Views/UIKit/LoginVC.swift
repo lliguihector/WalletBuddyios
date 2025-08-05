@@ -39,12 +39,6 @@ class LoginVC: UIViewController {
     let passwordTextField = WBTextField(type: .password, iconName: "lock")
     let signInButton =  WBButton(backgroundColor: .systemMint, title: "Sign In")
 
-    
-   
-    
-    
-   
-  
     override func viewDidLoad() {
         super.viewDidLoad()
      
@@ -181,7 +175,7 @@ class LoginVC: UIViewController {
             switch result{
             case .success:
               
-                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter.shared).environmentObject(NetworkMonitor.shared)
+                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter.shared).environmentObject(NetworkMonitor.shared).environmentObject(UserViewModel.shared)
                    let hostingVC = UIHostingController(rootView: rootView)
                    
                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
@@ -191,9 +185,6 @@ class LoginVC: UIViewController {
                        self.appWindow  = window
                    }
 
-                
-                
-                
             case .failure(let message):
                 showAlert(title: "Error", message: message)
             }

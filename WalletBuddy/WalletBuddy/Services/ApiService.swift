@@ -6,6 +6,8 @@
 //
 import Foundation
 
+
+@MainActor
 final class ApiService {
             
     static let shared = ApiService()
@@ -14,12 +16,12 @@ final class ApiService {
     
     
     
-    func verifyUser(withToken token: String) async -> Bool {
-        print("this is the firebase Token: \(token)")
+    func verifyUser(withToken token: String) async -> AppUser? {
+        print("Firebase Token: -> \(token)")
         
         guard let url = URL(string: "http://localhost:3000/user/check-or-create") else {
-            print("Invalid URL")
-            return false
+            print("❌ Invalid URL")
+            return nil
         }
         
         var request = URLRequest(url: url)
@@ -30,22 +32,44 @@ final class ApiService {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
-                print("Server error or unexpected response")
-                return false
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("❌ Invalid response")
+                return nil
             }
             
-            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            let isNewUser = json?["isNewUser"] as? Bool ?? false
-            
-            return isNewUser
+            switch httpResponse.statusCode {
+            case 200:
+                do {
+                    
+                    
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    print("JSON -> \(json) ")
+                    let user = try JSONDecoder().decode(AppUser.self, from: data)
+                    return user
+                } catch {
+                    print("❌ Failed to decode AppUser: \(error)")
+                    return nil
+                }
+            case 401:
+                print("⚠️ Unauthorized: Invalid or expired token")
+            case 500...599:
+                print("❌ Server error: \(httpResponse.statusCode)")
+            default:
+                // Optional: Try to print server error message
+                if let errorMessage = String(data: data, encoding: .utf8) {
+                    print("⚠️ Server responded with status \(httpResponse.statusCode): \(errorMessage)")
+                } else {
+                    print("⚠️ Unexpected status code: \(httpResponse.statusCode)")
+                }
+            }
             
         } catch {
-            print("Error verifying user: \(error)")
-            return false
+            print("❌ Network or decoding error: \(error.localizedDescription)")
         }
+        
+        return nil
     }
+
 
     
     

@@ -17,9 +17,9 @@ final class UserRepository {
     }
 
     func createUser(from appUser: AppUser) {
-        let user = UserEntity(context: context)
-        user.id = appUser.id
-        user.email = appUser.email
+//        let user = UserEntity(context: context)
+//        user.id = appUser.id
+//        user.email = appUser.email
 //        user.isLoggedIn = appUser.isLoggedIn
         saveContext()
     }

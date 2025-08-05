@@ -10,7 +10,7 @@ import FirebaseAuth
 enum AppState {
     case loggedOut
     case loadingSkeleton
-    case loggedIn(AppUser)
+    case loggedIn
     case onboarding
 }
 

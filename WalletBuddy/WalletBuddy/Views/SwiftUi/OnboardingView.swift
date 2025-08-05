@@ -5,12 +5,48 @@
 //  Created by Hector Lliguichuzca on 7/21/25.
 //
 
+
 import SwiftUI
 
 struct OnboardingView: View {
+    @State private var firstName: String = ""
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        Text("OnboardingView")
+        VStack {
+            // Progress bar at top
+            ProgressView(value: 0.33)
+                .progressViewStyle(LinearProgressViewStyle())
+                .padding()
+
+            Spacer().frame(height: 100) // Add smaller top spacer to push content upward
+
+            VStack(spacing: 16) {
+                Text("What is your first name?")
+                    .font(.headline)
+
+                TextField("Enter First Name", text: $firstName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+
+                Button(action: {
+                    // TODO: handle next step
+                    print("First Name: \(firstName)")
+                }) {
+                    Text("Next")
+                        .bold()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                }
+            }
+
+            Spacer() // Remaining space below
+        }
+        .navigationTitle("Welcome! 😄")
+
     }
 }
 

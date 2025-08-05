@@ -9,9 +9,9 @@ import SwiftUI
 import FirebaseAuth
 
 struct MainView: View {
-
-    let user: AppUser
     
+    //Global Access
+    @EnvironmentObject var userViewModel: UserViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var navigationRouter: NavigationRouter
     @EnvironmentObject var networkMonitor: NetworkMonitor
@@ -28,13 +28,17 @@ struct MainView: View {
                         Circle().stroke(Color.white, lineWidth: 4)
                     )
                     .shadow(radius: 7)
-                Text("your email is: \(user.email)")
-                Text("your user uid is: \(user.id)")
-                Text("Internet Connectivity: \(networkMonitor.isConnected)")
+
+                Text("Welcome!").bold()
+                Text("\(userViewModel.appUser?.firstName ?? "nil")  \(userViewModel.appUser?.lastName ?? "nil")")
+                Text("Email: ").bold() + Text("\(userViewModel.appUser?.email ?? "No Email")")
+                Text("UID: ").bold() + Text("\(userViewModel.appUser?.uid ?? "No UID")")
+                Text("Profile Complete: ").bold() + Text("\(userViewModel.appUser!.profileCompleted)")
+                Text("Internet Connectivity: ").bold() + Text("\(networkMonitor.isConnected)")
                 Button("Logout") {
                     
                     appViewModel.logout()
-                    NavigationRouter.shared.popToRoot()
+//                    NavigationRouter.shared.popToRoot() MOVED TO AppViewModel
                   
                 }
                 
@@ -56,9 +60,10 @@ struct MainView: View {
     }
 }
 
-#Preview {
-    MainView(user: AppUser(id: "12345", email: "test@example.com"))
-        .environmentObject(AppViewModel.shared)
-        .environmentObject(NavigationRouter.shared)
-        .environmentObject(NetworkMonitor.shared)
-}
+//#Preview {
+//    MainView()
+//        .environmentObject(UserViewModel.shared)
+//        .environmentObject(AppViewModel.shared)
+//        .environmentObject(NavigationRouter.shared)
+//        .environmentObject(NetworkMonitor.shared)
+//}

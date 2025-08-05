@@ -5,11 +5,17 @@
 //  Created by Hector Lliguichuzca on 7/19/25.
 //
 import Foundation
-import FirebaseAuth
 
-struct AppUser: Identifiable,Codable{
-    let id: String    //Firebase UID
-    let email: String
+
+struct AppUser: Codable{
+
     
+    let uid: String    //Firebase UID
+    let email: String
+    let profileCompleted: Bool
+    let firstName: String
+    let lastName: String
+    let providerIds: [String]?
+
 }
 

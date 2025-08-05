@@ -11,8 +11,8 @@ import FirebaseAuth
 
 @MainActor
 class AppViewModel: ObservableObject {
-    
-    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared)
+
+    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, userViewModel: .shared)
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
@@ -23,27 +23,31 @@ class AppViewModel: ObservableObject {
     
    private let userRepository: UserRepository
    private let authService: AuthenticationService
-   private let apiService: ApiService   
+   private let apiService: ApiService
+  private let userViewModel: UserViewModel
 
-    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository){
+    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, userViewModel: UserViewModel){
         self.authService = authService
         self.userRepository = userRepository
         self.apiService = apiService
+        self.userViewModel = userViewModel
     }
     
     
 
 //Call this on app launch to check for an existing user session
     func initializeSession(){
-        if let user = authService.getCurrentUser(){
-            handleLoginSuccess(user: user)
+        if authService.isUaserLoggedIn(){
+            handleLoginSuccess()
         }else{
             state = .loggedOut
         }
+        
+        print("Initializing App Session")
     }
     
     
-    func handleLoginSuccess(user: AppUser) {
+    func handleLoginSuccess() {
         state = .loadingSkeleton
         
         Task {
@@ -51,37 +55,33 @@ class AppViewModel: ObservableObject {
             //Simulate network / data fetch delay
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             
-            //Get Firebase ID token
+            //1. Get Firebase ID token
             guard let idToken = try await authService.getIDToken(forceRefresh: false)else{
-                
                 print("❌ Faild to get Firebase ID Token")
+               logout()
                 return
             }
+            //2. send token to my backend
             
+            
+            if let user = await apiService.verifyUser(withToken: idToken){
+                //3. set my model via userViewModel
+                userViewModel.appUser = user
+                
+                if user.profileCompleted{
+                    state = .loggedIn
+                }else{
+                    print("Profile not completed")
+                        state = .onboarding
+                }
         
-            
-            print("API Token: \(idToken)")
-            
-            //Call API to verify user
-            let isNewUser = await apiService.verifyUser(withToken: idToken)
-            
-            if isNewUser{
-                print("New User detected and created for the first time ...")
                 
             }else{
-                print("Returning user")
+             logout()
             }
-            
-            
-            //Save user to Core Data here
-//            userRepository.createUser(from: user)
-            
-            
-            //TODO: Fetch additional user profile data here graphql
-            
-            //Once done, update state to loggedIn
-            print("App State: loged In")
-            state = .loggedIn(user)
+
+
+            //TODO: Fetch additional user profile data here graphq
         }
     }
     
@@ -96,6 +96,13 @@ class AppViewModel: ObservableObject {
                 
                 print("App State: logedOut")
                 state = .loggedOut
+                
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2){
+                    NavigationRouter.shared.popToRoot()
+                }
+                
+                
               
             } catch {
                 print("Logout failed: \(error.localizedDescription)")

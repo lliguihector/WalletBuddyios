@@ -17,7 +17,7 @@ class NavigationRouter: ObservableObject{
         path.append(route)
         
         print("Navigation Stack: \(path.count)")
-        print("Array: \(path)")
+       
     }
 
     func pop(){
