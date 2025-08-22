@@ -38,9 +38,26 @@ struct MyApp: App {
                             route.view
                         }
                         .task{
-                            appViewModel.initializeSession()
+                            
+                            
+                            if isFirstLaunch(){
+                                appViewModel.initializeSession()
+                                print("initialiing Session ... ")
+                            }
+                           
                         }
                 }
             }
     }
+    
+    func isFirstLaunch() -> Bool {
+        let key = "hasLaunchedBefore"
+        let launchedBefore = UserDefaults.standard.bool(forKey: key)
+        if !launchedBefore {
+            UserDefaults.standard.set(true, forKey: key)
+            return true
+        }
+        return false
+    }
+
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2919810B2E56909B004536A1 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 2919810A2E56909B004536A1 /* Apollo */; };
+		2919810D2E56909B004536A1 /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 2919810C2E56909B004536A1 /* ApolloAPI */; };
 		2970D9202E26185F00ACDD63 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 2970D91F2E26185F00ACDD63 /* FirebaseAuth */; };
 		2970DA702E2F759F00ACDD63 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2970DA6F2E2F759F00ACDD63 /* GoogleSignIn */; };
 		2970DA722E2F759F00ACDD63 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2970DA712E2F759F00ACDD63 /* GoogleSignInSwift */; };
@@ -31,17 +33,29 @@
 		2970D8A22DF3FF6F00ACDD63 /* Exceptions for "WalletBuddy" folder in "WalletBuddy" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				GraphQL/UpdateUserProfile.graphql,
 				Info.plist,
 			);
 			target = 2970D88F2DF3FF6E00ACDD63 /* WalletBuddy */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		291980892E5637CA004536A1 /* Exceptions for "WalletBuddy" folder in "Compile Sources" phase from "WalletBuddy" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 2970D88C2DF3FF6E00ACDD63 /* Sources */;
+			membershipExceptions = (
+				GraphQL/UpdateUserProfile.graphql,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2970D8922DF3FF6E00ACDD63 /* WalletBuddy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				2970D8A22DF3FF6F00ACDD63 /* Exceptions for "WalletBuddy" folder in "WalletBuddy" target */,
+				291980892E5637CA004536A1 /* Exceptions for "WalletBuddy" folder in "Compile Sources" phase from "WalletBuddy" target */,
 			);
 			path = WalletBuddy;
 			sourceTree = "<group>";
@@ -59,8 +73,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				2970DA722E2F759F00ACDD63 /* GoogleSignInSwift in Frameworks */,
+				2919810B2E56909B004536A1 /* Apollo in Frameworks */,
 				2970D9202E26185F00ACDD63 /* FirebaseAuth in Frameworks */,
 				2970DA702E2F759F00ACDD63 /* GoogleSignIn in Frameworks */,
+				2919810D2E56909B004536A1 /* ApolloAPI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +131,8 @@
 				2970D91F2E26185F00ACDD63 /* FirebaseAuth */,
 				2970DA6F2E2F759F00ACDD63 /* GoogleSignIn */,
 				2970DA712E2F759F00ACDD63 /* GoogleSignInSwift */,
+				2919810A2E56909B004536A1 /* Apollo */,
+				2919810C2E56909B004536A1 /* ApolloAPI */,
 			);
 			productName = WalletBuddy;
 			productReference = 2970D8902DF3FF6E00ACDD63 /* WalletBuddy.app */;
@@ -174,6 +192,7 @@
 			packageReferences = (
 				2970D91E2E26185F00ACDD63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				2970DA6E2E2F759F00ACDD63 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				291980852E5636F7004536A1 /* XCRemoteSwiftPackageReference "apollo-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2970D8912DF3FF6E00ACDD63 /* Products */;
@@ -477,6 +496,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		291980852E5636F7004536A1 /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.23.0;
+			};
+		};
 		2970D91E2E26185F00ACDD63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -496,6 +523,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2919810A2E56909B004536A1 /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 291980852E5636F7004536A1 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
+		2919810C2E56909B004536A1 /* ApolloAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 291980852E5636F7004536A1 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = ApolloAPI;
+		};
 		2970D91F2E26185F00ACDD63 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2970D91E2E26185F00ACDD63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

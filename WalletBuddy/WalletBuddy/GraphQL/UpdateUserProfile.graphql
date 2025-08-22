@@ -1,0 +1,16 @@
+//
+//  Untitled.swift
+//  WalletBuddy
+//
+//  Created by Hector Lliguichuzca on 8/20/25.
+//
+mutation UpdateUserProfile($uid: ID!, $input: UserProfileInput!){
+    updateUserProfile(uid: $uid, input: $input){
+        uid
+        firstName
+        lastName
+        profileCompleted
+        email
+    }
+}
+

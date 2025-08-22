@@ -1,35 +1,29 @@
 //
-//  OnboardingView.swift
+//  OnboardingView2.swift
 //  WalletBuddy
 //
-//  Created by Hector Lliguichuzca on 7/21/25.
+//  Created by Hector Lliguichuzca on 8/5/25.
 //
-
 
 import SwiftUI
 
-struct OnboardingView: View {
-    
-    
-    
-    @State private var firstName: String = ""
-    
-    @EnvironmentObject var navigationRouter: NavigationRouter
+struct OnboardingView2: View {
+    @State private var lastName: String = ""
 
     var body: some View {
         VStack {
             // Progress bar at top
-            ProgressView(value: 0.33)
+            ProgressView(value: 0.66)
                 .progressViewStyle(LinearProgressViewStyle())
                 .padding()
 
             Spacer().frame(height: 100) // Add smaller top spacer to push content upward
 
             VStack(spacing: 16) {
-                Text("What is your first name?")
+                Text("What is your last name?")
                     .font(.headline)
 
-                TextField("Enter First Name", text: $firstName)
+                TextField("Enter Last Name", text: $lastName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
 
@@ -53,5 +47,5 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView2()
 }

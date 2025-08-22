@@ -32,8 +32,10 @@ struct MainView: View {
                 Text("Welcome!").bold()
                 Text("\(userViewModel.appUser?.firstName ?? "nil")  \(userViewModel.appUser?.lastName ?? "nil")")
                 Text("Email: ").bold() + Text("\(userViewModel.appUser?.email ?? "No Email")")
+                Text("Email Verified: ").bold() + Text("\(userViewModel.appUser?.emailVerified ?? true)")
                 Text("UID: ").bold() + Text("\(userViewModel.appUser?.uid ?? "No UID")")
-                Text("Profile Complete: ").bold() + Text("\(userViewModel.appUser!.profileCompleted)")
+                Text("onboardingStep: ").bold() + Text("\(userViewModel.appUser!.onboardingStep)")
+                Text("Sign In Providers: ").bold() + Text("\(String(describing: userViewModel.appUser?.providerIds))")
                 Text("Internet Connectivity: ").bold() + Text("\(networkMonitor.isConnected)")
                 Button("Logout") {
                     

@@ -37,7 +37,26 @@ class AppViewModel: ObservableObject {
 
 //Call this on app launch to check for an existing user session
     func initializeSession(){
+
+
         if authService.isUaserLoggedIn(){
+            
+            //Fetch local user model to check if profile is complete
+
+            
+//            print("Initializing Function Called")
+//            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedProfile")
+//            
+//           if !hasCompletedOnboarding{
+//                state = .onboarding
+//               print("\(String(describing: userViewModel.appUser)) ?? did not load")
+//               
+//            }else{
+//                handleLoginSuccess()
+//                
+//
+//            }
+// 
             handleLoginSuccess()
         }else{
             state = .loggedOut
@@ -68,13 +87,13 @@ class AppViewModel: ObservableObject {
                 //3. set my model via userViewModel
                 userViewModel.appUser = user
                 
-                if user.profileCompleted{
+                switch user.onboardingStep {
+                case .enterName:
+                    state = .onboarding
+                case .complete:
                     state = .loggedIn
-                }else{
-                    print("Profile not completed")
-                        state = .onboarding
+                    
                 }
-        
                 
             }else{
              logout()

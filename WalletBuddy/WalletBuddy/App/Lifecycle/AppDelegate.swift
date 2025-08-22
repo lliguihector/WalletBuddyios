@@ -45,7 +45,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       return false
     }
     
-    
+    func applicationWillTerminate(_ application: UIApplication) {
+        UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
+        print("Terminating Application ... ")
+    }
+
     
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         // Called when a new scene session is being created.

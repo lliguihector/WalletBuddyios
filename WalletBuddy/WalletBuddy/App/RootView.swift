@@ -23,8 +23,10 @@ struct RootView: View {
         case .loggedIn:
             MainView()
         case.onboarding:
-        //Display Onboarding ui
-            OnboardingView()
+            NavigationStack{
+                OnboardingView()
+            }
+          
             
         }
     }

@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 final class ApiService {
-            
+    
     static let shared = ApiService()
     
     private init() {}
@@ -17,6 +17,10 @@ final class ApiService {
     
     
     func verifyUser(withToken token: String) async -> AppUser? {
+        
+        
+        
+        
         print("Firebase Token: -> \(token)")
         
         guard let url = URL(string: "http://localhost:3000/user/check-or-create") else {
@@ -69,15 +73,15 @@ final class ApiService {
         
         return nil
     }
-
-
     
     
-    func updateUserData(token: String,userData: AppUser)
-    {
-        
-        
-        
-    }
+  //Onboarding function
+    //Veryfy user with token 
+    //Send onboarding step data
+    //FirstName and LastName
+    //updateOnboarding step to Complete
+    
+    
+    //Wherever called on Success call apppViewModel logginSuccess() to SYNC model and UI
     
 }
