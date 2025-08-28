@@ -33,6 +33,28 @@ class AppViewModel: ObservableObject {
         self.userViewModel = userViewModel
     }
     
+    //SYNC With Backend Method
+    func syncAppUser(forceRefresh: Bool = false) async{
+        
+        do{
+            guard let idToken = try await authService.getIDToken(forceRefresh: forceRefresh) else{
+                print("❌ Faild to get Firebase ID Token")
+            logout()
+                return
+            }
+            
+            if let user = await apiService.verifyUser(withToken: idToken){
+
+                userViewModel.appUser = user // <--- sets AppUser Globally
+                print("✅ Synced latest AppUser from backend")
+            }else{
+                print("❌ Failed to fetch user from backend")
+                logout()
+            }
+        }catch{
+            print("❌ syncAppUser error: \(error.localizedDescription)")
+        }
+    }
     
 
 //Call this on app launch to check for an existing user session
@@ -41,23 +63,10 @@ class AppViewModel: ObservableObject {
 
         if authService.isUaserLoggedIn(){
             
-            //Fetch local user model to check if profile is complete
-
-            
-//            print("Initializing Function Called")
-//            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedProfile")
-//            
-//           if !hasCompletedOnboarding{
-//                state = .onboarding
-//               print("\(String(describing: userViewModel.appUser)) ?? did not load")
-//               
-//            }else{
-//                handleLoginSuccess()
-//                
-//
-//            }
-// 
-            handleLoginSuccess()
+            Task{
+               await handleLoginSuccess()
+            }
+           
         }else{
             state = .loggedOut
         }
@@ -66,48 +75,31 @@ class AppViewModel: ObservableObject {
     }
     
     
-    func handleLoginSuccess() {
+    func handleLoginSuccess() async{
+
         state = .loadingSkeleton
-        
-        Task {
+ 
+            try? await Task.sleep(nanoseconds: 1_000_000_000)  //Simulate network data fetch delay
             
-            //Simulate network / data fetch delay
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            
-            //1. Get Firebase ID token
-            guard let idToken = try await authService.getIDToken(forceRefresh: false)else{
-                print("❌ Faild to get Firebase ID Token")
-               logout()
-                return
-            }
-            //2. send token to my backend
-            
-            
-            if let user = await apiService.verifyUser(withToken: idToken){
-                //3. set my model via userViewModel
-                userViewModel.appUser = user
-                
-                switch user.onboardingStep {
+                await syncAppUser(forceRefresh: true)
+             
+                switch userViewModel.appUser?.onboardingStep {
                 case .enterName:
                     state = .onboarding
                 case .complete:
                     state = .loggedIn
-                    
+                default:
+                    state = .loggedOut
                 }
                 
-            }else{
-             logout()
-            }
-
-
             //TODO: Fetch additional user profile data here graphq
-        }
+    
     }
     
     func logout() {
-        
+        SpinnerManager.shared.show()
         Task{
-            SpinnerManager.shared.show()
+      
             
             do {
                 try authService.logout()

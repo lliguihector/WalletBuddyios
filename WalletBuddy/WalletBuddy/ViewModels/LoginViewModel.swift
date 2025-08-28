@@ -33,7 +33,7 @@ final class LoginViewModel {
             try await authService.login(email: email!, password: password!)
             
             
-            AppViewModel.shared.handleLoginSuccess()
+            await AppViewModel.shared.handleLoginSuccess()
             
             
             

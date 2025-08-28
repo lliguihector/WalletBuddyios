@@ -23,7 +23,7 @@ class ProfileViewModel: ObservableObject {
         
         do{
           
-            try await ApiService.shared.updateUserProfile(firstName: data.firstName, lastName: data.lastName, profileCompleted: true, token: token)
+//            try await ApiService.shared.updateUserProfile(firstName: data.firstName, lastName: data.lastName, profileCompleted: true, token: token)
             print("User profile updated")
         }catch{
             print("Failed to update profile: \(error)")
