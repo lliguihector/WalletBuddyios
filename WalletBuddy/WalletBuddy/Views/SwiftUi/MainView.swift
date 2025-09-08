@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import FirebaseAuth
 
 struct MainView: View {
     
@@ -17,55 +16,27 @@ struct MainView: View {
     @EnvironmentObject var networkMonitor: NetworkMonitor
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 16) {
-                Image("logo")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 100, height: 100)
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle().stroke(Color.white, lineWidth: 4)
-                    )
-                    .shadow(radius: 7)
-
-                Text("Welcome!").bold()
-                Text("\(userViewModel.appUser?.firstName ?? "nil")  \(userViewModel.appUser?.lastName ?? "nil")")
-                Text("Email: ").bold() + Text("\(userViewModel.appUser?.email ?? "No Email")")
-                Text("Email Verified: ").bold() + Text("\(userViewModel.appUser?.emailVerified ?? true)")
-                Text("UID: ").bold() + Text("\(userViewModel.appUser?.uid ?? "No UID")")
-                Text("onboardingStep: ").bold() + Text("\(userViewModel.appUser!.onboardingStep)")
-                Text("Sign In Providers: ").bold() + Text("\(String(describing: userViewModel.appUser?.providerIds))")
-                Text("Internet Connectivity: ").bold() + Text("\(networkMonitor.isConnected)")
-                Button("Logout") {
-                    
-                    appViewModel.logout()
-//                    NavigationRouter.shared.popToRoot() MOVED TO AppViewModel
-                  
+        
+        TabView{
+            HomeTabView()
+                .tabItem{
+                    Label("Home", systemImage: "house.fill")
                 }
-                
-                Spacer()
-            }
-            .padding()
-            .disabled(!networkMonitor.isConnected) // Disable interaction when offline
-            .opacity(networkMonitor.isConnected ? 1 : 0.5) // Optional visual cue
+            
+            MapView()
+                .tabItem{
+                    Label("Map", systemImage: "location.circle")
+                }
             
             
-            //Disables View when internet isnt connected
-            if !networkMonitor.isConnected {
-                offlineView()
-                    .transition(.opacity)
-                    .zIndex(1)  // Ensure offline view is on top
-            }
+            ProfileView()
+                .tabItem{
+                    Label("Profile", systemImage: "person.fill")
+                }
+            
+            
+            
         }
-        .animation(.easeInOut, value: networkMonitor.isConnected)
+        
     }
 }
-
-//#Preview {
-//    MainView()
-//        .environmentObject(UserViewModel.shared)
-//        .environmentObject(AppViewModel.shared)
-//        .environmentObject(NavigationRouter.shared)
-//        .environmentObject(NetworkMonitor.shared)
-//}

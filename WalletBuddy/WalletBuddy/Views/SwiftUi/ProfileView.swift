@@ -8,9 +8,111 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject var userViewModel: UserViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var networkMonitor: NetworkMonitor
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        Text("ProfileView")
+        NavigationStack{
+            ZStack {
+                VStack(spacing: 16) {
+                    // Top logo and name/email/title
+                    VStack(alignment: .center, spacing: 2) {
+                        Image("logo")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                            .shadow(radius: 7)
+                        
+                        Text("Hector Lliguichuzhca")
+                            .font(.headline)
+                        Text("Software Developer")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Text(userViewModel.appUser?.email ?? "email@example.com")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 16)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(4)
+                    
+                    // Table/List
+                    List {
+                        Section(header: Text("Information").font(.headline)){
+                            // Clickable row
+                            NavigationLink(destination: UIDView(uid: userViewModel.appUser?.uid ?? "No UID")) {
+                                TableRow(label: "UID", value: "")
+                            }
+                            
+                            TableRow(label: "Organization", value: "Determit")
+                            TableRow(label: "Email Verified", value: "\(userViewModel.appUser?.emailVerified ?? true)")
+                        
+                            TableRow(label: "Sign In Providers", value: "\(userViewModel.appUser?.providerIds?.joined(separator: ", ") ?? "None")")
+                            TableRow(label: "Internet Connectivity", value: "\(networkMonitor.isConnected ? "Online" : "Offline")")
+                            
+                            
+                        }
+                        Section(header: Text("Contact Info").font(.headline)){
+                            TableRow(label: "Phone", value: "7185369221")
+                            TableRow(label: "Email", value: userViewModel.appUser?.email ?? "email@example.com")
+                            
+                            
+                        }
+                    }
+                    .listStyle(.plain)
+                    
+                    Spacer()
+                    
+                    Button("Logout") {
+                        appViewModel.logout()
+                    }
+                    .foregroundColor(.mint)
+                    
+                    if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                       let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+                        Text("Version \(version) (\(build))")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                            .padding(.top, 4)
+                    }
+                }
+                .padding()
+                .disabled(!networkMonitor.isConnected)
+                .opacity(networkMonitor.isConnected ? 1 : 0.5)
+                
+                if !networkMonitor.isConnected {
+                    offlineView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
+            }
+            .animation(.easeInOut, value: networkMonitor.isConnected)
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+// Helper for row with edge-to-edge alignment
+struct TableRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .fontWeight(.bold)
+            Spacer()
+            Text(value)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(UIColor.systemBackground))
+        .listRowInsets(EdgeInsets())
     }
 }
 

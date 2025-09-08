@@ -7,9 +7,8 @@
 import SwiftUI
 enum AppRoute: Hashable{
     
-    case onboarding
-    case profile
-    case settings
+   
+
     case loginEmail
     
     
@@ -18,12 +17,7 @@ enum AppRoute: Hashable{
         switch self{
         case .loginEmail:
             LogInVCWrapper()
-        case .onboarding:
-            OnboardingView()
-        case .profile:
-            ProfileView()
-        case .settings:
-            SettingsView()
+        
         }
     }
     

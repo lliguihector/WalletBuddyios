@@ -27,7 +27,7 @@ struct LoginOptionsView: View {
             }
             
             HStack{
-                Text("Welcome to WalletBuddy")
+                Text("Welcome to Works!")
                     .font(.title2)
                     .bold()
                     .padding(.top, 4)

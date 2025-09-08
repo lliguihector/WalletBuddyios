@@ -63,6 +63,9 @@ class AppViewModel: ObservableObject {
 
         if authService.isUaserLoggedIn(){
             
+            //Show skeleton immediately while we verify user
+            state = .loadingSkeleton
+            
             Task{
                await handleLoginSuccess()
             }
@@ -77,16 +80,17 @@ class AppViewModel: ObservableObject {
     
     func handleLoginSuccess() async{
 
-        state = .loadingSkeleton
+       
  
-            try? await Task.sleep(nanoseconds: 1_000_000_000)  //Simulate network data fetch delay
+//            try? await Task.sleep(nanoseconds: 1_000_000_000)  
             
                 await syncAppUser(forceRefresh: true)
-             
+          
                 switch userViewModel.appUser?.onboardingStep {
                 case .enterName:
                     state = .onboarding
                 case .complete:
+                   
                     state = .loggedIn
                 default:
                     state = .loggedOut

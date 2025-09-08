@@ -166,6 +166,9 @@ class LoginVC: UIViewController {
             
             //delays task for 2sec for testing loading spinner 
 //            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            
+            
+            
             let result = await viewModel.login(email: usernameTextField.text, password: passwordTextField.text)
             
             
@@ -174,16 +177,29 @@ class LoginVC: UIViewController {
             
             switch result{
             case .success:
-              
-                let rootView = RootView().environmentObject(AppViewModel.shared).environmentObject(NavigationRouter.shared).environmentObject(NetworkMonitor.shared).environmentObject(UserViewModel.shared)
+                AppViewModel.shared.state = .loadingSkeleton
+                let rootView = RootView()
+                    .environmentObject(AppViewModel.shared)
+                    .environmentObject(NavigationRouter.shared)
+                    .environmentObject(NetworkMonitor.shared)
+                    .environmentObject(UserViewModel.shared)
+                
+                
                    let hostingVC = UIHostingController(rootView: rootView)
-                   
                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                        let window = UIWindow(windowScene: scene)
                        window.rootViewController = hostingVC
                        window.makeKeyAndVisible()
                        self.appWindow  = window
                    }
+                
+                DispatchQueue.main.async{
+                    
+                    Task {
+                        await AppViewModel.shared.handleLoginSuccess()
+                    }
+                }
+                
 
             case .failure(let message):
                 showAlert(title: "Error", message: message)

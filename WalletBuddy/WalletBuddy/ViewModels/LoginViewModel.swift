@@ -31,12 +31,8 @@ final class LoginViewModel {
         do{
             
             try await authService.login(email: email!, password: password!)
-            
-            
-            await AppViewModel.shared.handleLoginSuccess()
-            
-            
-            
+
+
             return .success
         }catch{
             return .failure(error.localizedDescription)
