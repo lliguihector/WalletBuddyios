@@ -8,7 +8,10 @@
 import SwiftUI
 import FirebaseAuth
 
-
+struct AppAlert: Identifiable{
+    let id = UUID()
+    let message: String
+}
 @MainActor
 class AppViewModel: ObservableObject {
 
@@ -16,7 +19,7 @@ class AppViewModel: ObservableObject {
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
-
+    @Published var activeAlert: AppAlert? = nil
     
     
     
@@ -45,14 +48,22 @@ class AppViewModel: ObservableObject {
             
             if let user = await apiService.verifyUser(withToken: idToken){
 
-                userViewModel.appUser = user // <--- sets AppUser Globally
+//                userViewModel.appUser = user // <--- sets AppUser Globally
+                userViewModel.updateUser(user)
                 print("✅ Synced latest AppUser from backend")
             }else{
                 print("❌ Failed to fetch user from backend")
+                activeAlert = AppAlert(message: "We couldn’t complete your sign-in. Please try again.")
+            
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.logout()
+                }
+
                 logout()
             }
         }catch{
             print("❌ syncAppUser error: \(error.localizedDescription)")
+            activeAlert = AppAlert(message: "Something went wrong. Please check your connection and try again.")
         }
     }
     
@@ -121,6 +132,7 @@ class AppViewModel: ObservableObject {
               
             } catch {
                 print("Logout failed: \(error.localizedDescription)")
+                activeAlert = AppAlert(message: "Failed to log out. Please try again.")
             }
             SpinnerManager.shared.hide()
         }

@@ -27,7 +27,7 @@ struct LoginOptionsView: View {
             }
             
             HStack{
-                Text("Welcome to Works!")
+                Text("Welcome to SafetyWorks!")
                     .font(.title2)
                     .bold()
                     .padding(.top, 4)
@@ -71,7 +71,16 @@ struct LoginOptionsView: View {
             Spacer()
         }
         .padding()
-      
+      //This will trigger an alert if AppViewModel sets activeAlert
+        .alert(item: $appViewModel.activeAlert){ alert in
+            Alert(
+            title: Text("Connection Error"),
+                message: Text(alert.message),
+                dismissButton: .default(Text("OK"))
+            )
+            
+            
+        }
     }
 }
 

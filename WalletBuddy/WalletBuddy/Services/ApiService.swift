@@ -8,6 +8,34 @@ import Foundation
 
 
 
+struct ErrorResponse: Decodable{
+    let error: String
+}
+//Enumeration for checkin
+enum LocationUpdateError: Error{
+    case invalidURL
+    case serializationError
+    case decodingError
+    case networkError(Error)
+    case serverError(statusCode: Int, message: String?)
+}
+
+
+struct CheckInResponse: Codable{
+    let status: String
+    let message:String
+    let checkIn: CheckIn
+}
+
+struct CheckIn: Identifiable,Codable{
+    let id: String
+    let timeStamp:Date
+    let latitude: Double
+    let longitude: Double
+    let locationName: String //BlueTooth Beacon location 
+}
+
+
 final class ApiService {
     
     static let shared = ApiService()
@@ -72,18 +100,85 @@ final class ApiService {
     }
     
     
-    
-    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double) async ->Bool{
+    //Sends the users current location to check in user
+    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double) async -> Result<CheckIn, LocationUpdateError>{
+        
+        guard let url = URL(string: "http://localhost:3000/checkin/checkin")else{
+            return .failure(.invalidURL)
+        }
         
         
         
-      return true
-    
+        let body: [String: Any] = [
+            "lat": latitude,
+            "lng": longitude
+        ]
+        
+
+        
+        
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else{
+            return .failure(.serializationError)
+        }
+        
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = httpBody
+      
+        do{
+            let(data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else{
+                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode)else{
+                
+                if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self,from: data){
+                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: errorResponse.error))
+                }else{
+                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+                }
+              
+            }
+            
+            
+            let decoder = JSONDecoder()
+            decoder.dataDecodingStrategy = .base64
+            let decodedResponse = try decoder.decode(CheckInResponse.self, from: data)
+            return .success(decodedResponse.checkIn)
+            
+            
+            
+        }catch let decodingError as DecodingError{
+            
+            print("Decoding error: \(decodingError)")
+            return .failure(.decodingError)
+        }catch{
+            print("Network error: \(error)")
+            return .failure(.networkError(error))
+        }
+  
     }
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   //Onboarding function
-    //Veryfy user with token 
+    //Veryfy user with token
     //Send onboarding step data
     //FirstName and LastName
     //updateOnboarding step to Complete
