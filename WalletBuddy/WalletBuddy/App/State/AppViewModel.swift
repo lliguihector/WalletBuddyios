@@ -72,7 +72,7 @@ class AppViewModel: ObservableObject {
     func initializeSession(){
 
 
-        if authService.isUaserLoggedIn(){
+        if authService.isUserLoggedIn(){
             
             //Show skeleton immediately while we verify user
             state = .loadingSkeleton

@@ -22,7 +22,7 @@ final class FirebaseAuthManager: AuthenticationService{
         try Auth.auth().signOut()
     }
     
-    func isUaserLoggedIn() -> Bool {
+    func isUserLoggedIn() -> Bool {
         return Auth.auth().currentUser != nil
     }
  

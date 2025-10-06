@@ -13,7 +13,7 @@ protocol AuthenticationService {
     
     func logout() throws
 
-    func isUaserLoggedIn() -> Bool
+    func isUserLoggedIn() -> Bool
     
     func getIDToken(forceRefresh: Bool)async throws -> String?
     

@@ -15,11 +15,19 @@ class CheckInViewModel: ObservableObject {
     @Published var showSuccessAlert = false
     @Published var showFailureAlert = false
     @Published var errorMessage: String? = nil
+    @Published var isLoading: Bool = false
+   
+    
+    
     
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
+
+    
+    
+  
 
     
     //MARK: - Dependencies
@@ -32,6 +40,7 @@ class CheckInViewModel: ObservableObject {
     
     
     
+    
     //MARK: - Init
     init() {
         //Listen for location updates
@@ -40,20 +49,20 @@ class CheckInViewModel: ObservableObject {
             guard let self = self else {return}
             
             //Store last known liocation for manual check-ins
-            
             self.lastKnownLocation = location
             
             //update region to follow user
-            
-            self.region = MKCoordinateRegion(
-                center: location.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
+            Task{ @MainActor in
+                self.region = MKCoordinateRegion(
+                    center: location.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                )
+            }
             
             //Auto check-in when location updates (optional)
-            Task{
-                await self.handleLocationUpdate(location)
-            }
+//            Task{
+//                await self.handleLocationUpdate(location)
+//            }
         }
     }
 
@@ -66,16 +75,49 @@ class CheckInViewModel: ObservableObject {
         await handleLocationUpdate(location)
     }
     
-    //MARK: - Core Check-In Logic
-    var locationPublisher: Published<MKCoordinateRegion>.Publisher {
-        locationManager.$region
-    }
 
+
+    //MARK: - Fit Map to User + Organization
+    //Update map region to fit multiple coordinates (user + organizations)
+    func updateRegionToFit(userLocation: CLLocation?, organizationCoordinates: [CLLocationCoordinate2D]){
+        
+        var allCoords: [CLLocationCoordinate2D] = organizationCoordinates
+        
+        if let user = userLocation{
+            allCoords.append(user.coordinate)
+        }
+        
+        guard !allCoords.isEmpty else{return}
+        
+        
+        let latitudes = allCoords.map {$0.latitude}
+        let longitudes = allCoords.map {$0.longitude}
+        
+        
+        let minLat = latitudes.min()!
+        let maxLat = latitudes.max()!
+        let minLon = longitudes.min()!
+        let maxLon = longitudes.max()!
+        
+        
+        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat)/2, longitude: (minLon + maxLon)/2)
+        
+        let span = MKCoordinateSpan(latitudeDelta: (maxLat - minLat) * 1.5, longitudeDelta: (maxLon - minLon) * 1.5)
+        
+        
+        //UI updates always on main thread
+        DispatchQueue.main.async{
+            self.region = MKCoordinateRegion(center: center, span: span)
+        }
+        
+    }
+    
     
     
     
 private func handleLocationUpdate(_ location: CLLocation) async{
-        
+        isLoading = true
+    defer{isLoading = false}//Always hide loading on exit (success or failure)
         do{
             
             guard let idToken = try await firebaseService.getIDToken(forceRefresh: true) else {
@@ -129,6 +171,5 @@ private func handleLocationUpdate(_ location: CLLocation) async{
     }
     
 
-    
-    
+ 
 }

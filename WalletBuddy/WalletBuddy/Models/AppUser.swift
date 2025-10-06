@@ -20,7 +20,7 @@ struct AppUser: Codable{
     let profileImageUrl: String? //Can be nill 
     let title: String
     let organization: Organization?
-    
+    let devices: [Device]?
     
 
 }
@@ -55,4 +55,15 @@ struct Address: Codable{
 struct Location: Codable{
     let type: String
     let coordinates: [Double]//[longitude, latitude]
+}
+
+
+struct Device: Codable{
+    let deviceId: String
+    let apnsToken: String
+    let platform: String
+    let model: String
+    let systemVersion: String
+    let appVersion: String
+    let lastUsedAt: Date
 }

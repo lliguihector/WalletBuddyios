@@ -62,7 +62,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenParts = deviceToken.map {String(format:"%02.2hhx", $0)}
+        let token = tokenParts.joined()
+        UserDefaults.standard.set(token, forKey: "apnsToken")
+        
+        print("Device Token: \(deviceToken)")
+        
+        
+        //Register device with backedn if user is logged in
+        if FirebaseAuthManager.shared.isUserLoggedIn(){
+            DeviceManager.shared.registerDeviceWithBackend()
+        }
+        
+  
+    }
 
-
+    
+    private func application(_ application: UIApplication, didFailedToRegisterFromRemoteNotificationsWithError error: Error){
+        print("Failed to register for remote notifications: \(error)")
+    }
 }
 

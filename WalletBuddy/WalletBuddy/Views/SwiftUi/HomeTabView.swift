@@ -16,7 +16,10 @@ struct HomeTabView: View {
     @StateObject private var viewModel = CheckInViewModel()
     
     
-    
+    //For backed error messages Toast State
+    @State private var toastMessage: String? = nil
+    @State private var showToast = false
+    @State private var toastIsError = false
     
     @State private var showAlert = false
     
@@ -35,12 +38,12 @@ struct HomeTabView: View {
                         // Profile Image
                         if let image = userViewModel.profileImage{
                             Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(Circle())
-                                        .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                        .shadow(radius: 7)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
                         } else {
                             Image(systemName: "person.fill")
                                 .resizable()
@@ -80,10 +83,16 @@ struct HomeTabView: View {
                         annotationItems: getOrganizationAnnotation()) { org in
                         
                         MapAnnotation(coordinate: org.coordinate) {
+                            
+
+                            //Annotation Button
                             Button(action: {
                                 // Show organization sheet
-                                selectedOrganization = userViewModel.appUser?.organization
-                                showOrgSheet = true
+                                DispatchQueue.main.async {
+                                    selectedOrganization = userViewModel.appUser?.organization
+                                    showOrgSheet = true
+                                }
+                              
                             }) {
                                 VStack(spacing: 4) {
                                     Image("location-pointer")
@@ -99,26 +108,28 @@ struct HomeTabView: View {
                             .buttonStyle(PlainButtonStyle()) // Prevent default button styling
                         }
                     }
-                    .frame(height: 250)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-                    .padding(.horizontal)
-                    .sheet(isPresented: $showOrgSheet) {
-                        if let org = selectedOrganization {
-                            
-                            OrganizationDetailsView(organization: org)
+                        .frame(height: 250)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        .padding(.horizontal)
+                    //Display Organization data when selected on Map
+                        .sheet(isPresented: $showOrgSheet) {
+                            if let org = selectedOrganization {
+                                
+                                OrganizationDetailsView(organization: org)
+                            }
                         }
-                    }
-                    
+             
+
                     // -------------------
                     // Clock In Button Card
                     Button(action: {
-                      
+                        
                         // Send location to DB on button press if needed
                         Task{
                             await viewModel.checkinManually()
                         }
-                       
+                        
                     }) {
                         HStack {
                             Image(systemName: "clock.fill")
@@ -147,26 +158,54 @@ struct HomeTabView: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
+       
+        //Reusable Spinner
+            if viewModel.isLoading{
+                LoadingSpinnerView()
+                    .transition(.opacity)
+                    .zIndex(2)
+            }
+        
+        //--------------------
+        //Toast Overlay
+        if showToast, let message = toastMessage{
+            VStack{
+                WBToast(message: message, isError: toastIsError)
+                Spacer()
+            }
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .zIndex(2)
         }
-        .animation(.easeInOut, value: networkMonitor.isConnected)
-        .onReceive(viewModel.$showSuccessAlert) { value in
-            if value {
-                showAlert = true
+    }
+        .animation(.easeInOut, value: showToast)
+        .onChange(of: viewModel.showSuccessAlert){ value in
+            if value{
+                toastMessage = "Checke-in successful!"
+                toastIsError = false
+                //                showToastWithAutoDismiss()
                 viewModel.showSuccessAlert = false
             }
         }
-        .alert("Check-In Successful", isPresented: $viewModel.showSuccessAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Your location has been sent successfully")
+        .onChange(of: viewModel.showFailureAlert){ value in
+            if value{
+                toastMessage = viewModel.errorMessage ?? "An error occurred."
+                toastIsError = true
+                showToastWithAutoDismiss()
+                viewModel.showFailureAlert = false
+            }
         }
-        .alert("Check-In Failed", isPresented: $viewModel.showFailureAlert){
-            Button("OK", role: .cancel){}
-        }message:{
-            Text(viewModel.errorMessage ?? "An unknown error occured.")
+}
+    //MARK: - Toast Auto Dismiss Logic
+    private func showToastWithAutoDismiss() {
+        withAnimation{
+            showToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5){
+            withAnimation {
+                showToast = false
+            }
         }
     }
-    
     //MARK: - Organization Annotation
     struct OrganizationAnnotation: Identifiable {
         let id: String
@@ -178,9 +217,11 @@ struct HomeTabView: View {
               org.location.coordinates.count == 2 else { return [] }
         
         let coord = CLLocationCoordinate2D(
-            latitude: org.location.coordinates[1],
-            longitude: org.location.coordinates[0]
+            latitude: org.location.coordinates[0],
+            longitude: org.location.coordinates[1]
+          
         )
+  
         return [OrganizationAnnotation(id: org.name, coordinate: coord)]
     }
 }

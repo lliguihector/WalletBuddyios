@@ -5,9 +5,9 @@
 //  Created by Hector Lliguichuzca on 7/28/25.
 //
 import Foundation
+import UIKit
 
-
-
+//Decode backend error response 
 struct ErrorResponse: Decodable{
     let error: String
 }
@@ -166,14 +166,16 @@ final class ApiService {
     }
     
     
+    //MARK: -- Register Device with backend
+   
     
     
     
     
-    
-    
-    
-    
+    func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
+        
+        
+    }
     
     
     
