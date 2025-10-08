@@ -27,37 +27,18 @@ struct MyApp: App {
     
     var body: some Scene {
             WindowGroup{
-                NavigationStack(path: $navigationRouter.path){
                     RootView()//Entry Point View
                         .environment(\.managedObjectContext,persistenceController.container.viewContext)
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
                         .environmentObject(networkMonitor)
                         .environmentObject(userViewModel)
-                        .navigationDestination(for: AppRoute.self){ route in
-                            route.view
-                        }
-                        .task{
-                            
-                            
-                            if isFirstLaunch(){
-                                appViewModel.initializeSession()
-                                print("initialiing Session ... ")
-                            }
-                           
-                        }
-                }
+
             }
     }
     
-    func isFirstLaunch() -> Bool {
-        let key = "hasLaunchedBefore"
-        let launchedBefore = UserDefaults.standard.bool(forKey: key)
-        if !launchedBefore {
-            UserDefaults.standard.set(true, forKey: key)
-            return true
-        }
-        return false
-    }
+    
+    
+
 
 }

@@ -5,40 +5,36 @@
 //  Created by Hector Lliguichuzca on 7/21/25.
 //
 import SwiftUI
+import UIKit
+import Foundation
 
-class NavigationRouter: ObservableObject{
-    
+/// Represents all possible destinations in your app
+@MainActor
+class NavigationRouter: ObservableObject {
     static let shared = NavigationRouter()
-    
-    
-    @Published var path: [AppRoute] = []
-    
-    func push (_ route: AppRoute){
+
+    /// SwiftUI expects `NavigationPath`, not `[AppRoute]`
+    @Published var path = NavigationPath()
+
+    func push(_ route: AppRoute) {
         path.append(route)
-        
-        print("Navigation Stack: \(path.count)")
-       
+        print("Navigation Stack count: \(path.count)")
     }
 
-    func pop(){
-        if !path.isEmpty{
+    func pop() {
+        if !path.isEmpty {
             path.removeLast()
         }
-        print("Navigation Stack: \(path.count)")
-        print("Array: \(path)")
-    }
-    
-    func popToRoot(){
-        path.removeAll()
-        print("Navigation Stack: \(path.count)")
-        print("Array: \(path)")
-    }
-    
-    func replace(with route: AppRoute){
-        path = [route]
+        print("Navigation Stack count: \(path.count)")
     }
 
-    
-    
-    
+    func popToRoot() {
+        path = NavigationPath()
+        print("Navigation Stack cleared")
+    }
+
+    func replace(with route: AppRoute) {
+        path = NavigationPath()
+        path.append(route)
+    }
 }

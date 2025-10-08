@@ -21,6 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initializes and configures Firebase services for the app.
         FirebaseApp.configure()
         
+
+        
+    
+        
         return true
     }
 
@@ -65,17 +69,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map {String(format:"%02.2hhx", $0)}
-        let token = tokenParts.joined()
-        UserDefaults.standard.set(token, forKey: "apnsToken")
+        let tokenString = tokenParts.joined()
         
-        print("Device Token: \(deviceToken)")
+        let savedToken = DeviceManager.shared.currentToken
         
-        
-        //Register device with backedn if user is logged in
-        if FirebaseAuthManager.shared.isUserLoggedIn(){
-            DeviceManager.shared.registerDeviceWithBackend()
+        //Only upload if token changed
+        if savedToken !=  tokenString{
+            print("APNs token changed or new - uploaded backend...")
+                DeviceManager.shared.saveToken(tokenString)
+                DeviceManager.shared.registerDeviceWithBackend(token: tokenString)
+        }else{
+            print("APNs token unchanged, no backed update needed.")
         }
-        
+     
+  print("From AppDelegate APNs token is = \(tokenString)")
   
     }
 

@@ -8,6 +8,7 @@
 import UIKit
 import SwiftUI
 import Firebase
+import Foundation
 
 class LoginVC: UIViewController {
 
@@ -30,7 +31,7 @@ class LoginVC: UIViewController {
 
     
   
-    var appWindow: UIWindow?
+//    var appWindow: UIWindow?
     
     let logoImageView = UIImageView()
     let usernameLabel = WBLabel(title: "Email")
@@ -69,11 +70,44 @@ class LoginVC: UIViewController {
         //Set text fields for testing
         usernameTextField.text = "lliguichuzcah@gmail.com"
         passwordTextField.text = "poli09"
+        
+        
+        //Add a back button
+        let backImage = UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysTemplate)
+        let backButton = UIBarButtonItem(
+            image: backImage,
+            style: .plain,
+            target: self,
+            action: #selector(backToLoginOptions)
+        )
+
+        // Set the title
+        backButton.title = "Back"
+
+        // Set the tint color to black (affects the image too)
+        backButton.tintColor = .black
+
+        navigationItem.leftBarButtonItem = backButton
+
+    
+        
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.view.layer.removeAllAnimations()
+    }
+    
+    
+
+
+    @objc func backToLoginOptions() {
+        // Reset NavigationStack path
+        NavigationRouter.shared.popToRoot()
+        
+        // Set app state to show LoginOptionsView
+        AppViewModel.shared.state = .loggedOut
     }
 
     
@@ -159,48 +193,26 @@ class LoginVC: UIViewController {
     
     @objc func loginWithFirebaseAuth(){
         
+        
       //Show Spinner
         SpinnerManager.shared.show()
+        
         Task{
             
-            
-            //delays task for 2sec for testing loading spinner 
-//            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            
-            
-            
+            //Call Login on ViewModel
             let result = await viewModel.login(email: usernameTextField.text, password: passwordTextField.text)
-            
-            
+         
             //Hide spinner
             SpinnerManager.shared.hide()
             
             switch result{
             case .success:
+                //Set app state to loadingSkelleton
                 AppViewModel.shared.state = .loadingSkeleton
-                let rootView = RootView()
-                    .environmentObject(AppViewModel.shared)
-                    .environmentObject(NavigationRouter.shared)
-                    .environmentObject(NetworkMonitor.shared)
-                    .environmentObject(UserViewModel.shared)
-                
-                
-                   let hostingVC = UIHostingController(rootView: rootView)
-                   if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                       let window = UIWindow(windowScene: scene)
-                       window.rootViewController = hostingVC
-                       window.makeKeyAndVisible()
-                       self.appWindow  = window
-                   }
-                
-                DispatchQueue.main.async{
-                    
-                    Task {
-                        await AppViewModel.shared.handleLoginSuccess()
-                    }
-                }
-                
 
+                //Handle login success: sync user and set proper app state
+                await AppViewModel.shared.handleLoginSuccess()
+      
             case .failure(let message):
                 showAlert(title: "Error", message: message)
             }
@@ -213,7 +225,10 @@ class LoginVC: UIViewController {
 //MARK: -- UI METHODS
     
     func createDismissKeyboardTapGesture(){
-        let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing))
+//
+        
+        let tap = UITapGestureRecognizer(target: self.view, action: #selector(self.view.endEditing(_:)))
+
         view.addGestureRecognizer(tap)
     }
     

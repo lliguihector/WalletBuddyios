@@ -15,21 +15,52 @@ struct RootView: View {
     
     var body: some View {
 
-        switch appViewModel.state {
-        case .loggedOut:
-            LoginOptionsView()
-        case .loadingSkeleton:
-            SkeletonView()
-        case .loggedIn:
-            MainView()
-        case.onboarding:
-            NavigationStack{
-                OnboardingView()
+        
+        NavigationStack(path: $navigationRouter.path)
+        {
+            Group{
+                
+                switch appViewModel.state {
+                case .loggedOut:
+                    LoginOptionsView()
+                case .loadingSkeleton:
+                    SkeletonView()
+                case .loggedIn:
+                    MainView()
+                case.onboarding:
+                    OnboardingView()
+                case .loggingIn:
+                    LogInVCWrapper()
+             
+              
+                }
             }
-          
-            
+            .navigationDestination(for: AppRoute.self){ route in
+                route.view
+                
+            }
         }
+//        .task{
+//            
+//            
+//            if isFirstLaunch(){
+//                appViewModel.initializeSession()
+//                print("initialiing Session ... ")
+//            }
+//           
+//        }
     }
-      
-
+    
+    
+    
+    //MARK: - Helper
+    func isFirstLaunch() -> Bool {
+        let key = "hasLaunchedBefore"
+        let launchedBefore = UserDefaults.standard.bool(forKey: key)
+        if !launchedBefore {
+            UserDefaults.standard.set(true, forKey: key)
+            return true
+        }
+        return false
+    }
 }

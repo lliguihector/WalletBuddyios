@@ -48,7 +48,7 @@ final class ApiService {
 
         print("Firebase Token: -> \(token)")
         
-        guard let url = URL(string: "http://localhost:3000/user/check-or-create") else {
+        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/user/check-or-create") else {
             print("❌ Invalid URL")
             return nil
         }
@@ -103,7 +103,7 @@ final class ApiService {
     //Sends the users current location to check in user
     func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double) async -> Result<CheckIn, LocationUpdateError>{
         
-        guard let url = URL(string: "http://localhost:3000/checkin/checkin")else{
+        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
             return .failure(.invalidURL)
         }
         
@@ -114,7 +114,7 @@ final class ApiService {
             "lng": longitude
         ]
         
-
+           print("From Application location: \(latitude) \(longitude)")
         
         
         guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else{
@@ -174,7 +174,7 @@ final class ApiService {
     
     func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
         
-        
+        print("Data sent to API...")
     }
     
     

@@ -18,14 +18,14 @@ struct MainView: View {
     var body: some View {
         
         TabView{
-            HomeTabView()
+           HomeTabView()
                 .tabItem{
                     Label("Home", systemImage: "house.fill")
                 }
             
-            MapView()
+            WelcomeView()
                 .tabItem{
-                    Label("Map", systemImage: "location.circle")
+                    Label("Updates", systemImage: "ellipsis.message.fill")
                 }
             
             

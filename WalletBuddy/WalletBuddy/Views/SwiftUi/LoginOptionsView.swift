@@ -42,10 +42,13 @@ struct LoginOptionsView: View {
             }
         
             
-            //Firebase Email and Password
+            //--- LOGIN VIEW EMAIL PASSWORD Firebase ----
             Button(action: {
-                navigationRouter.push(.loginEmail)
+                AppViewModel.shared.state = .loggingIn
+                //optionally push if you want to track it
+//                NavigationRouter.shared.push(.loginEmail)
             }) {
+                
                 HStack(spacing: 12) {
                     Image(systemName: "envelope")
                         .resizable()

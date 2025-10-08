@@ -16,7 +16,7 @@ class CheckInViewModel: ObservableObject {
     @Published var showFailureAlert = false
     @Published var errorMessage: String? = nil
     @Published var isLoading: Bool = false
-   
+   @Published var shouldFollowUser = true
     
     
     
@@ -44,26 +44,21 @@ class CheckInViewModel: ObservableObject {
     //MARK: - Init
     init() {
         //Listen for location updates
-        locationManager.onLocationUpdate = {[weak self] location in
-           
-            guard let self = self else {return}
-            
-            //Store last known liocation for manual check-ins
+        locationManager.onLocationUpdate = { [weak self] location in
+            guard let self = self else { return }
             self.lastKnownLocation = location
             
-            //update region to follow user
-            Task{ @MainActor in
-                self.region = MKCoordinateRegion(
-                    center: location.coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                )
+            if self.shouldFollowUser {
+                DispatchQueue.main.async {
+                    self.region = MKCoordinateRegion(
+                        center: location.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                    )
+                }
             }
-            
-            //Auto check-in when location updates (optional)
-//            Task{
-//                await self.handleLocationUpdate(location)
-//            }
         }
+
+
     }
 
     //MARK: - Manual Check-In
@@ -79,38 +74,27 @@ class CheckInViewModel: ObservableObject {
 
     //MARK: - Fit Map to User + Organization
     //Update map region to fit multiple coordinates (user + organizations)
-    func updateRegionToFit(userLocation: CLLocation?, organizationCoordinates: [CLLocationCoordinate2D]){
-        
+    func updateRegionToFit(userLocation: CLLocation?, organizationCoordinates: [CLLocationCoordinate2D]) {
         var allCoords: [CLLocationCoordinate2D] = organizationCoordinates
-        
-        if let user = userLocation{
+        if let user = userLocation {
             allCoords.append(user.coordinate)
         }
-        
-        guard !allCoords.isEmpty else{return}
-        
-        
-        let latitudes = allCoords.map {$0.latitude}
-        let longitudes = allCoords.map {$0.longitude}
-        
-        
-        let minLat = latitudes.min()!
-        let maxLat = latitudes.max()!
-        let minLon = longitudes.min()!
-        let maxLon = longitudes.max()!
-        
-        
-        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat)/2, longitude: (minLon + maxLon)/2)
-        
-        let span = MKCoordinateSpan(latitudeDelta: (maxLat - minLat) * 1.5, longitudeDelta: (maxLon - minLon) * 1.5)
-        
-        
-        //UI updates always on main thread
-        DispatchQueue.main.async{
+        guard !allCoords.isEmpty else { return }
+
+        let latitudes = allCoords.map { $0.latitude }
+        let longitudes = allCoords.map { $0.longitude }
+
+        let center = CLLocationCoordinate2D(latitude: (latitudes.min()! + latitudes.max()!) / 2,
+                                            longitude: (longitudes.min()! + longitudes.max()!) / 2)
+        let span = MKCoordinateSpan(latitudeDelta: (latitudes.max()! - latitudes.min()!) * 1.5,
+                                    longitudeDelta: (longitudes.max()! - longitudes.min()!) * 1.5)
+
+        // Use async dispatch to avoid publishing during view updates
+        DispatchQueue.main.async {
             self.region = MKCoordinateRegion(center: center, span: span)
         }
-        
     }
+
     
     
     

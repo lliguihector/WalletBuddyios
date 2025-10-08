@@ -18,17 +18,43 @@ struct ProfileView: View {
                 VStack(spacing: 16) {
                     // Top logo and name/email/title
                     VStack(alignment: .center, spacing: 2) {
-                        Image("logo")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 80, height: 80)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .shadow(radius: 7)
                         
-                        Text("Hector Lliguichuzhca")
+                        
+                        if let logoUrl = userViewModel.appUser?.organization?.logoUrl, let url = URL(string: logoUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                                    .scaledToFit()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                    .shadow(radius: 7)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 80, height: 80)
+                            }
+                        } else {
+                            Image(systemName: "building.2")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
+                        }
+                        
+                        
+                        
+//                        Image("logo")
+//                            .resizable()
+//                            .scaledToFill()
+//                            .frame(width: 80, height: 80)
+//                            .clipShape(Circle())
+//                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
+//                            .shadow(radius: 7)
+                        
+                        Text("\(userViewModel.appUser?.firstName ?? "") \(userViewModel.appUser?.lastName ?? "")")
                             .font(.headline)
-                        Text("Software Developer")
+                        Text(userViewModel.appUser?.title ?? "No title")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Text(userViewModel.appUser?.email ?? "email@example.com")
@@ -48,7 +74,7 @@ struct ProfileView: View {
                                 TableRow(label: "UID", value: "")
                             }
                             
-                            TableRow(label: "Organization", value: "Determit")
+                            TableRow(label: "Organization", value: "\(userViewModel.appUser?.organization?.name ?? "No Organization")")
                             TableRow(label: "Email Verified", value: "\(userViewModel.appUser?.emailVerified ?? true)")
                         
                             TableRow(label: "Sign In Providers", value: "\(userViewModel.appUser?.providerIds?.joined(separator: ", ") ?? "None")")
@@ -68,6 +94,7 @@ struct ProfileView: View {
                     Spacer()
                     
                     Button("Logout") {
+                        //Call AppViewModel Log out
                         appViewModel.logout()
                     }
                     .foregroundColor(.mint)

@@ -5,6 +5,7 @@
 //  Created by Hector Lliguichuzca on 8/30/25.
 //
 
+
 import SwiftUI
 import MapKit
 
@@ -13,17 +14,14 @@ struct HomeTabView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var networkMonitor: NetworkMonitor
     
-    @StateObject private var viewModel = CheckInViewModel()
+  
     
-    
-    //For backed error messages Toast State
+    // Toast state
     @State private var toastMessage: String? = nil
     @State private var showToast = false
     @State private var toastIsError = false
-    
-    @State private var showAlert = false
-    
-    // For organization annotation sheet
+    @State private var showMapView = false
+    // Organization sheet
     @State private var showOrgSheet = false
     @State private var selectedOrganization: Organization? = nil
     
@@ -59,11 +57,9 @@ struct HomeTabView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(userViewModel.appUser?.firstName ?? "") \(userViewModel.appUser?.lastName ?? "")")
                                 .font(.headline)
-                            
                             Text(userViewModel.appUser?.title ?? "No title")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                            
                             Text(userViewModel.appUser?.email ?? "email@example.com")
                                 .font(.footnote)
                                 .foregroundColor(.gray)
@@ -77,63 +73,64 @@ struct HomeTabView: View {
                     .padding(.horizontal)
                     
                     // -------------------
-                    // Map Card
-                    Map(coordinateRegion: $viewModel.region,
-                        showsUserLocation: true,
-                        annotationItems: getOrganizationAnnotation()) { org in
+                    // After your profile card HStack
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Last Check In")
+                            .font(.headline)
+                            .padding(.horizontal)
+                            .padding(.top, 16)
                         
-                        MapAnnotation(coordinate: org.coordinate) {
-                            
-
-                            //Annotation Button
-                            Button(action: {
-                                // Show organization sheet
-                                DispatchQueue.main.async {
-                                    selectedOrganization = userViewModel.appUser?.organization
-                                    showOrgSheet = true
-                                }
-                              
-                            }) {
-                                VStack(spacing: 4) {
-                                    Image("location-pointer")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 40, height: 40)
-                                    Text(userViewModel.appUser?.organization?.name ?? "Organization")
-                                        .font(.caption2)
-                                        .bold()
-                                        .fixedSize(horizontal: true, vertical: false)
-                                }
+                        VStack(spacing: 0) {
+                            HStack {
+                                Text("Last Login:")
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text("N/A")
+                                    .foregroundColor(.primary)
                             }
-                            .buttonStyle(PlainButtonStyle()) // Prevent default button styling
+                            .padding()
+                            Divider()
+                            
+                            HStack {
+                                Text("Device Info:")
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text( "Unknown")
+                                    .foregroundColor(.primary)
+                            }
+                            .padding()
+                            Divider()
                         }
-                    }
-                        .frame(height: 250)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
-                    //Display Organization data when selected on Map
-                        .sheet(isPresented: $showOrgSheet) {
-                            if let org = selectedOrganization {
-                                
-                                OrganizationDetailsView(organization: org)
-                            }
-                        }
-             
-
+                    }
+                    
+                    
+                    
                     // -------------------
-                    // Clock In Button Card
+                    //                    Button("Show APNs Token") {
+                    //                        if let token = DeviceManager.shared.currentToken {
+                    //                            print("APNs Token: \(token)")
+                    //                        } else {
+                    //                            print("No token stored")
+                    //                        }
+                    //                    }
+                    
+                    // -------------------
+                    // Clock In Button
                     Button(action: {
-                        
-                        // Send location to DB on button press if needed
-                        Task{
-                            await viewModel.checkinManually()
+                        Task {
+                            //                            await viewModel.checkinManually()
+                            //show map after check-in
+                            showMapView = true
                         }
-                        
                     }) {
                         HStack {
                             Image(systemName: "clock.fill")
-                            Text("Check In")
+                            Text("Start Check In")
                                 .fontWeight(.semibold)
                         }
                         .padding()
@@ -151,62 +148,23 @@ struct HomeTabView: View {
                 .opacity(networkMonitor.isConnected ? 1 : 0.5)
             }
             
+            //Mark: - Sheet for Map Check-In
+            .sheet(isPresented: $showMapView){
+                MapView()
+            }
+            
             // -------------------
-            // Offline overlay
             if !networkMonitor.isConnected {
                 offlineView()
                     .transition(.opacity)
                     .zIndex(1)
             }
-       
-        //Reusable Spinner
-            if viewModel.isLoading{
-                LoadingSpinnerView()
-                    .transition(.opacity)
-                    .zIndex(2)
-            }
-        
-        //--------------------
-        //Toast Overlay
-        if showToast, let message = toastMessage{
-            VStack{
-                WBToast(message: message, isError: toastIsError)
-                Spacer()
-            }
-            .transition(.move(edge: .top).combined(with: .opacity))
-            .zIndex(2)
+            
         }
     }
-        .animation(.easeInOut, value: showToast)
-        .onChange(of: viewModel.showSuccessAlert){ value in
-            if value{
-                toastMessage = "Checke-in successful!"
-                toastIsError = false
-                //                showToastWithAutoDismiss()
-                viewModel.showSuccessAlert = false
-            }
-        }
-        .onChange(of: viewModel.showFailureAlert){ value in
-            if value{
-                toastMessage = viewModel.errorMessage ?? "An error occurred."
-                toastIsError = true
-                showToastWithAutoDismiss()
-                viewModel.showFailureAlert = false
-            }
-        }
-}
-    //MARK: - Toast Auto Dismiss Logic
-    private func showToastWithAutoDismiss() {
-        withAnimation{
-            showToast = true
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5){
-            withAnimation {
-                showToast = false
-            }
-        }
-    }
-    //MARK: - Organization Annotation
+    
+
+    // MARK: - Organization Annotation
     struct OrganizationAnnotation: Identifiable {
         let id: String
         let coordinate: CLLocationCoordinate2D
@@ -215,23 +173,10 @@ struct HomeTabView: View {
     func getOrganizationAnnotation() -> [OrganizationAnnotation] {
         guard let org = userViewModel.appUser?.organization,
               org.location.coordinates.count == 2 else { return [] }
-        
         let coord = CLLocationCoordinate2D(
             latitude: org.location.coordinates[0],
             longitude: org.location.coordinates[1]
-          
         )
-  
         return [OrganizationAnnotation(id: org.name, coordinate: coord)]
     }
 }
-
-
-
-
-
-
-
-
-
-// MARK: - Organization Detail Sheet

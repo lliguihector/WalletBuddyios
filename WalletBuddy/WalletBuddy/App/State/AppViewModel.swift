@@ -15,29 +15,39 @@ struct AppAlert: Identifiable{
 @MainActor
 class AppViewModel: ObservableObject {
 
-    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, userViewModel: .shared)
+    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, userViewModel: .shared, deviceManager: DeviceManager.shared )
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
     @Published var activeAlert: AppAlert? = nil
+    @Published var navigationPath = NavigationPath()
     
     
-    
-    
+    //MARK: -- Dependencies
    private let userRepository: UserRepository
    private let authService: AuthenticationService
    private let apiService: ApiService
   private let userViewModel: UserViewModel
+    private let deviceManager: DeviceManager
 
-    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, userViewModel: UserViewModel){
+    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, userViewModel: UserViewModel, deviceManager: DeviceManager){
         self.authService = authService
         self.userRepository = userRepository
         self.apiService = apiService
         self.userViewModel = userViewModel
+        self.deviceManager = deviceManager
     }
     
     //SYNC With Backend Method
     func syncAppUser(forceRefresh: Bool = false) async{
+        
+        guard UIApplication.shared.applicationState == .active else {
+            
+            print("App in not active - skipping sync")
+            
+            return
+        }
+        
         
         do{
             guard let idToken = try await authService.getIDToken(forceRefresh: forceRefresh) else{
@@ -77,9 +87,10 @@ class AppViewModel: ObservableObject {
             //Show skeleton immediately while we verify user
             state = .loadingSkeleton
             
-            Task{
-               await handleLoginSuccess()
+            Task { [weak self] in
+                await self?.handleLoginSuccess()
             }
+
            
         }else{
             state = .loggedOut
@@ -91,9 +102,8 @@ class AppViewModel: ObservableObject {
     
     func handleLoginSuccess() async{
 
-       
- 
-//            try? await Task.sleep(nanoseconds: 1_000_000_000)  
+
+//            try? await Task.sleep(nanoseconds: 1_000_000_000)
             
                 await syncAppUser(forceRefresh: true)
           
@@ -103,6 +113,8 @@ class AppViewModel: ObservableObject {
                 case .complete:
                    
                     state = .loggedIn
+                    DeviceManager.shared.requestNotificationPermissionAndRegister()
+               
                 default:
                     state = .loggedOut
                 }
@@ -120,16 +132,17 @@ class AppViewModel: ObservableObject {
                 try authService.logout()
                 await performLogoutCleanup()
                 
-                print("App State: logedOut")
-                state = .loggedOut
-                
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2){
+                await MainActor.run{
+                    self.navigationPath = NavigationPath() //Reset path before state change
                     NavigationRouter.shared.popToRoot()
+                    state = .loggedOut
                 }
                 
+             
                 
-              
+                
+            
+                print("App State: logedOut")
             } catch {
                 print("Logout failed: \(error.localizedDescription)")
                 activeAlert = AppAlert(message: "Failed to log out. Please try again.")
