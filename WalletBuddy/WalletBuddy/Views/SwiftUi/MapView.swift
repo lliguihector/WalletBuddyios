@@ -15,33 +15,80 @@ struct MapView: View {
         center: CLLocationCoordinate2D(latitude: 37.3318, longitude: -122.031),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-    
+
     // Toast state
     @State private var toastMessage: String? = nil
     @State private var showToast = false
     @State private var toastIsError = false
-    
+
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            
-            // Map
+        ZStack {
+            // MARK: - Map
             Map(coordinateRegion: $region, showsUserLocation: true)
                 .edgesIgnoringSafeArea(.all)
-            
-            // Top-left X button
-            Button(action: {
-                dismiss()
-            }) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(.white)
-                    .shadow(radius: 3)
-                    .padding()
+
+            // MARK: - X Button (Dismiss)
+            VStack {
+                HStack {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 50, height:50)
+                            .background(Color.black.opacity(0.6))
+                            .clipShape(Circle())
+                            .shadow(radius: 3)
+                            .padding()
+                    }
+                    Spacer()
+                }
+                Spacer()
             }
-            
-            // MARK: - Check In Now Button
+
+            // MARK: - Floating Buttons + Check-In Button
             VStack {
                 Spacer()
+
+                // Floating icon buttons (Compass + Google Maps)
+                HStack {
+                    Spacer()
+                    VStack(spacing: 16) {
+                        // Compass Button
+                        Button(action: {
+                            print("Compass tapped")
+                        }) {
+                            Image(systemName: "location.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.blue)
+                                .padding(14)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+
+                        // Google Maps Button
+                        Button(action: {
+                            print("Google Map Button tapped")
+                        }) {
+                            Image("google-maps")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .padding(14)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+                    }
+                    .padding(.trailing, 20)
+                }
+                .padding(.bottom, 40) // keeps icon buttons above Check-In
+
+                // Check-In Button
                 Button(action: {
                     Task {
                         await viewModel.checkinManually()
@@ -65,20 +112,21 @@ struct MapView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.8))
+                    .background(Color.blue)
                     .cornerRadius(12)
                     .shadow(radius: 5)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.bottom, 20) // space from screen bottom
             }
-            
+
             // MARK: - Loading Spinner
             if viewModel.isLoading {
                 LoadingSpinnerView()
                     .transition(.opacity)
                     .zIndex(2)
             }
-            
+
             // MARK: - Toast
             if showToast, let message = toastMessage {
                 VStack {
@@ -94,7 +142,7 @@ struct MapView: View {
         }
         .animation(.easeInOut, value: showToast)
     }
-    
+
     // MARK: - Toast Auto Dismiss
     private func showToastWithAutoDismiss() {
         withAnimation { showToast = true }

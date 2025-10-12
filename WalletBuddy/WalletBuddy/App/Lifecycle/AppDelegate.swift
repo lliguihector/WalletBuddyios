@@ -50,7 +50,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
+//        UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
         print("Terminating Application ... ")
     }
 

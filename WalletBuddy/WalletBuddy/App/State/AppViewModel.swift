@@ -20,6 +20,7 @@ class AppViewModel: ObservableObject {
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
     @Published var activeAlert: AppAlert? = nil
+    @Published var isLoading: Bool = false
     @Published var navigationPath = NavigationPath()
     
     
@@ -40,7 +41,10 @@ class AppViewModel: ObservableObject {
     
     //SYNC With Backend Method
     func syncAppUser(forceRefresh: Bool = false) async{
+ 
         
+        //Simulate netork delay
+//        try? await Task.sleep(nanoseconds: 1500_000_000)
         guard UIApplication.shared.applicationState == .active else {
             
             print("App in not active - skipping sync")
@@ -79,33 +83,47 @@ class AppViewModel: ObservableObject {
     
 
 //Call this on app launch to check for an existing user session
-    func initializeSession(){
+    func initializeSession()async{
 
-
+      
+        
+        isLoading = true
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        isLoading = false
         if authService.isUserLoggedIn(){
             
             //Show skeleton immediately while we verify user
             state = .loadingSkeleton
+ 
             
-            Task { [weak self] in
-                await self?.handleLoginSuccess()
-            }
+          
+              await handleLoginSuccess()
+          
 
            
         }else{
             state = .loggedOut
         }
         
-        print("Initializing App Session")
+        print("Initializing App Session user not loged in yet")
     }
     
     
-    func handleLoginSuccess() async{
+    
+    
+    
+    
+    
 
+    func handleLoginSuccess(forecRefresh: Bool = false) async{
 
-//            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        
+               
             
-                await syncAppUser(forceRefresh: true)
+                await syncAppUser(forceRefresh: forecRefresh)
+      
+        
+        //Small delay for smoother transition
           
                 switch userViewModel.appUser?.onboardingStep {
                 case .enterName:

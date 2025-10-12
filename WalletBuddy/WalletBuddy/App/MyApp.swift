@@ -23,7 +23,8 @@ struct MyApp: App {
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @StateObject private var userViewModel = UserViewModel.shared
 
-
+//MARK: -- Init Firebase
+  
     
     var body: some Scene {
             WindowGroup{
@@ -33,6 +34,10 @@ struct MyApp: App {
                         .environmentObject(navigationRouter)
                         .environmentObject(networkMonitor)
                         .environmentObject(userViewModel)
+                        .task{
+                    
+                            await appViewModel.initializeSession()
+                        }
 
             }
     }

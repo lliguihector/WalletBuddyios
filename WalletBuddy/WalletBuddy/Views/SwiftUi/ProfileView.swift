@@ -97,11 +97,11 @@ struct ProfileView: View {
                         //Call AppViewModel Log out
                         appViewModel.logout()
                     }
-                    .foregroundColor(.mint)
+                    .foregroundColor(.blue)
                     
                     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-                        Text("Version \(version) (\(build))")
+                        Text("App Version \(version) (\(build))")
                             .font(.footnote)
                             .foregroundColor(.gray)
                             .padding(.top, 4)

@@ -1,8 +1,6 @@
 //
-//  ViewController.swift
+//  LoginVC.swift
 //  WalletBuddy
-//
-//  Created by Hector Lliguichuzca on 6/7/25.
 //
 
 import UIKit
@@ -12,258 +10,226 @@ import Foundation
 
 class LoginVC: UIViewController {
 
-    //Inject AuthFirebaseManager into LoginViewModel
-
-
     private lazy var viewModel = LoginViewModel()
     
+    let loginLabel = UILabel()
     
-    //Inject using DependencyContainer
-//    private let dependencyContainer =  DependencyContainer()
-//    private var viewModel: LoginViewModel!
-
-    //Add the following in View did Load
-//    Task{@MainActor in
-//        self.viewModel = dependencyContainer.makeLoginViewModel()
-//    }
-//    
-//    
-
-    
-  
-//    var appWindow: UIWindow?
-    
-    let logoImageView = UIImageView()
     let usernameLabel = WBLabel(title: "Email")
     let usernameTextField = WBTextField(type: .username, iconName: "person")
-    let passwordlabel = WBLabel(title: "Password")
+    
+    let passwordLabel = WBLabel(title: "Password")
     let passwordTextField = WBTextField(type: .password, iconName: "lock")
-    let signInButton =  WBButton(backgroundColor: .systemMint, title: "Sign In")
-
+    let showPasswordButton = UIButton(type: .system)
+    
+    let errorLabel = UILabel()
+    
+    let signInButton = WBButton(backgroundColor: .systemBlue, title: "Sign In")
+    
+    let forgotPasswordButton: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("Forgot Password?", for: .normal)
+        btn.setTitleColor(.systemBlue, for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        return btn
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-     
         view.backgroundColor = .systemBackground
-      
         
-        
-        //Accessibility Identifier for UITest
+        // Accessibility
         usernameTextField.accessibilityIdentifier = "usernameTextField"
         passwordTextField.accessibilityIdentifier = "passwordTextField"
         signInButton.accessibilityIdentifier = "signInButton"
         
-        
-        //Delegates
+        // Delegates
         usernameTextField.delegate = self
         passwordTextField.delegate = self
         
-        //UI Configurations
-        configureLogoImageView()
-        configureUsernameLabel()
-        configureUserNameTextField()
-        configurePasswordlabel()
-        configurePasswordTextField()
-        createDismissKeyboardTapGesture()
+        // Configure UI
+        configureLoginLabel()
+        configureUsernameField()
+        configurePasswordField()
+        configureShowPasswordButton()
+        configureErrorLabel()
+        configureForgotPasswordButton()
         configureSignInButton()
+        createDismissKeyboardTapGesture()
         
-        
-        //Set text fields for testing
+        // Pre-fill for testing
         usernameTextField.text = "lliguichuzcah@gmail.com"
         passwordTextField.text = "poli09"
         
-        
-        //Add a back button
-        let backImage = UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysTemplate)
+        // Back button
         let backButton = UIBarButtonItem(
-            image: backImage,
+            image: UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysTemplate),
             style: .plain,
             target: self,
             action: #selector(backToLoginOptions)
         )
-
-        // Set the title
         backButton.title = "Back"
-
-        // Set the tint color to black (affects the image too)
         backButton.tintColor = .black
-
         navigationItem.leftBarButtonItem = backButton
-
+    }
     
+    // MARK: - UI Configurations
+    
+    func configureLoginLabel() {
+        view.addSubview(loginLabel)
+        loginLabel.translatesAutoresizingMaskIntoConstraints = false
+        loginLabel.text = "Log In"
+        loginLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        loginLabel.textColor = .label
+        loginLabel.textAlignment = .center
         
-
+        NSLayoutConstraint.activate([
+            loginLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
+            loginLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.view.layer.removeAllAnimations()
-    }
-    
-    
-
-
-    @objc func backToLoginOptions() {
-        // Reset NavigationStack path
-        NavigationRouter.shared.popToRoot()
-        
-        // Set app state to show LoginOptionsView
-        AppViewModel.shared.state = .loggedOut
-    }
-
-    
-//MARK: -- UI Configurations
-    
-    //Logo Image Placement
-    func configureLogoImageView(){
-            view.addSubview(logoImageView)
-            logoImageView.translatesAutoresizingMaskIntoConstraints = false
-            logoImageView.image = UIImage(named: "logo")
-            NSLayoutConstraint.activate([
-                logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2),
-                logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                logoImageView.heightAnchor.constraint(equalToConstant: 60),
-                logoImageView.widthAnchor.constraint(equalToConstant: 60)
-            ])}
-    
-    
-    //username Label
-    func configureUsernameLabel(){
+    func configureUsernameField() {
         view.addSubview(usernameLabel)
-        NSLayoutConstraint.activate([
-            usernameLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 16),
-            usernameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-        ])
-        
-    }
-    
-    
-    //Username TextField Placement
-    func configureUserNameTextField(){
         view.addSubview(usernameTextField)
+        
         NSLayoutConstraint.activate([
+            usernameLabel.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 32),
+            usernameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            
             usernameTextField.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: 8),
-            usernameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            usernameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            usernameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            usernameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             usernameTextField.heightAnchor.constraint(equalToConstant: 50)
-        ])}
-    
-    
-    //Password label
-    func configurePasswordlabel(){
-        view.addSubview(passwordlabel)
-        NSLayoutConstraint.activate([
-            passwordlabel.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 8),
-            passwordlabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
         ])
-        
-        
-        
     }
     
-    
-    
-    //Password Text Field Placement
-    func configurePasswordTextField(){
+    func configurePasswordField() {
+        view.addSubview(passwordLabel)
         view.addSubview(passwordTextField)
+        
         NSLayoutConstraint.activate([
+            passwordLabel.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 16),
+            passwordLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             
-            passwordTextField.topAnchor.constraint(equalTo: passwordlabel.bottomAnchor, constant: 8),
-            passwordTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            passwordTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            passwordTextField.topAnchor.constraint(equalTo: passwordLabel.bottomAnchor, constant: 8),
+            passwordTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            passwordTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50)
-        ]) }
-    //Sign In Button Placement
-    func configureSignInButton(){
+        ])
+    }
+    
+    func configureShowPasswordButton() {
+        view.addSubview(showPasswordButton)
+        
+        let eyeClosed = UIImage(systemName: "eye.slash")
+        showPasswordButton.setImage(eyeClosed, for: .normal)
+        showPasswordButton.tintColor = .systemGray
+        showPasswordButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
+        showPasswordButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            showPasswordButton.centerYAnchor.constraint(equalTo: passwordTextField.centerYAnchor),
+            showPasswordButton.trailingAnchor.constraint(equalTo: passwordTextField.trailingAnchor, constant: -8),
+            showPasswordButton.widthAnchor.constraint(equalToConstant: 30),
+            showPasswordButton.heightAnchor.constraint(equalToConstant: 30)
+        ])
+    }
+    
+    func configureErrorLabel() {
+        view.addSubview(errorLabel)
+        errorLabel.translatesAutoresizingMaskIntoConstraints = false
+        errorLabel.textColor = .systemRed
+        errorLabel.font = .systemFont(ofSize: 14)
+        errorLabel.numberOfLines = 0
+        errorLabel.textAlignment = .center
+        errorLabel.isHidden = true
+        
+        NSLayoutConstraint.activate([
+            errorLabel.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 8),
+            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+        ])
+    }
+    
+    func configureForgotPasswordButton() {
+        view.addSubview(forgotPasswordButton)
+        forgotPasswordButton.translatesAutoresizingMaskIntoConstraints = false
+        forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
+        
+        NSLayoutConstraint.activate([
+            forgotPasswordButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 8),
+            forgotPasswordButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+        ])
+    }
+    
+    func configureSignInButton() {
         view.addSubview(signInButton)
         signInButton.addTarget(self, action: #selector(loginWithFirebaseAuth), for: .touchUpInside)
+        signInButton.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
-            signInButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 16),
-            signInButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            signInButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            signInButton.topAnchor.constraint(equalTo: forgotPasswordButton.bottomAnchor, constant: 24),
+            signInButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            signInButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             signInButton.heightAnchor.constraint(equalToConstant: 50)
-        ])}
-    
-    func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        ])
     }
+    
+    // MARK: - Actions
+    
+    @objc func togglePasswordVisibility() {
+        passwordTextField.isSecureTextEntry.toggle()
+        let eyeImageName = passwordTextField.isSecureTextEntry ? "eye-slash" : "eye"
+        showPasswordButton.setImage(UIImage(systemName: eyeImageName), for: .normal)
+    }
+    
+    
 
     
+    @objc func forgotPasswordTapped() {
+        // TODO: Show forgot password screen or alert
+        print("Forgot password tapped")
+    }
     
-    @objc func loginWithFirebaseAuth(){
-        
-        
-      //Show Spinner
+    @objc func backToLoginOptions() {
+        NavigationRouter.shared.popToRoot()
+        AppViewModel.shared.state = .loggedOut
+    }
+    
+    @objc func loginWithFirebaseAuth() {
+        errorLabel.isHidden = true
         SpinnerManager.shared.show()
         
-        Task{
-            
-            //Call Login on ViewModel
+        Task {
             let result = await viewModel.login(email: usernameTextField.text, password: passwordTextField.text)
-         
-            //Hide spinner
             SpinnerManager.shared.hide()
             
-            switch result{
+            switch result {
             case .success:
-                //Set app state to loadingSkelleton
                 AppViewModel.shared.state = .loadingSkeleton
-
-                //Handle login success: sync user and set proper app state
-                await AppViewModel.shared.handleLoginSuccess()
-      
+                await AppViewModel.shared.handleLoginSuccess(forecRefresh: true)
             case .failure(let message):
-                showAlert(title: "Error", message: message)
+                errorLabel.text = message
+                errorLabel.isHidden = false
             }
-            
-            
-            
         }
-        
     }
-//MARK: -- UI METHODS
     
-    func createDismissKeyboardTapGesture(){
-//
-        
+    func createDismissKeyboardTapGesture() {
         let tap = UITapGestureRecognizer(target: self.view, action: #selector(self.view.endEditing(_:)))
-
         view.addGestureRecognizer(tap)
     }
-    
-    //Spinner Handling
-    
-    
-    
-    
-    
-    
 }
 
-
-
-
-
-
-
-
-
-
+// MARK: - UITextFieldDelegate
 extension LoginVC: UITextFieldDelegate {
-    
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-    
-        
         if textField == usernameTextField {
             passwordTextField.becomeFirstResponder()
-        }else if textField == passwordTextField {
+        } else if textField == passwordTextField {
             textField.resignFirstResponder()
             loginWithFirebaseAuth()
         }
-        
         return true
     }
-    
 }

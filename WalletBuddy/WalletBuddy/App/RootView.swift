@@ -14,53 +14,41 @@ struct RootView: View {
     
     
     var body: some View {
-
         
-        NavigationStack(path: $navigationRouter.path)
-        {
-            Group{
-                
-                switch appViewModel.state {
-                case .loggedOut:
-                    LoginOptionsView()
-                case .loadingSkeleton:
-                    SkeletonView()
-                case .loggedIn:
-                    MainView()
-                case.onboarding:
-                    OnboardingView()
-                case .loggingIn:
-                    LogInVCWrapper()
-             
-              
+        ZStack{
+            NavigationStack(path: $navigationRouter.path)
+            {
+                Group{
+                    
+                    switch appViewModel.state {
+                    case .loggedOut:
+                        LoginOptionsView()
+                    case .loadingSkeleton:
+                        SkeletonView()
+                    case .loggedIn:
+                        MainView()
+                    case.onboarding:
+                        OnboardingView()
+                    case .loggingIn:
+                        LogInVCWrapper()
+                        
+                        
+                    }
+                }
+                .navigationDestination(for: AppRoute.self){ route in
+                    route.view
+                    
                 }
             }
-            .navigationDestination(for: AppRoute.self){ route in
-                route.view
-                
+            //Show Loading spinner when isLoading is true
+            if appViewModel.isLoading {
+                LoadingSpinnerView()
+                    .transition(.opacity)
+                    .zIndex(1)
             }
+            
         }
-//        .task{
-//            
-//            
-//            if isFirstLaunch(){
-//                appViewModel.initializeSession()
-//                print("initialiing Session ... ")
-//            }
-//           
-//        }
-    }
-    
-    
-    
-    //MARK: - Helper
-    func isFirstLaunch() -> Bool {
-        let key = "hasLaunchedBefore"
-        let launchedBefore = UserDefaults.standard.bool(forKey: key)
-        if !launchedBefore {
-            UserDefaults.standard.set(true, forKey: key)
-            return true
-        }
-        return false
+        
+        .animation(.easeInOut, value: appViewModel.isLoading)
     }
 }

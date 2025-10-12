@@ -57,7 +57,7 @@ import UIKit
                 isSecureTextEntry = true
                 keyboardType = .default
                 returnKeyType = .go
-                addPasswordToggleIcon()
+//                addPasswordToggleIcon()
             }
             
             
