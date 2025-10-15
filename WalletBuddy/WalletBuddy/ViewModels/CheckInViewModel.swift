@@ -110,9 +110,13 @@ private func handleLocationUpdate(_ location: CLLocation) async{
                 errorMessage = "Authentication failed. Please log in again."
                 return
             }
-
+//Get decie ID
+            let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Unknown Device ID"
             
-   let result = await apiService.sendLocationToDB(withToken: idToken,latitude: location.coordinate.latitude,longitude: location.coordinate.longitude)
+            
+            
+            
+            let result = await apiService.sendLocationToDB(withToken: idToken,latitude: location.coordinate.latitude,longitude: location.coordinate.longitude, deviceID: deviceID)
 
             
         switch result {

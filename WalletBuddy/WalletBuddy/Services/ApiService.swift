@@ -21,20 +21,6 @@ enum LocationUpdateError: Error{
 }
 
 
-struct CheckInResponse: Codable{
-    let status: String
-    let message:String
-    let checkIn: CheckIn
-}
-
-struct CheckIn: Identifiable,Codable{
-    let id: String
-    let timeStamp:Date
-    let latitude: Double
-    let longitude: Double
-    let locationName: String //BlueTooth Beacon location 
-}
-
 
 final class ApiService {
     
@@ -46,6 +32,11 @@ final class ApiService {
     
     func verifyUser(withToken token: String) async -> AppUser? {
 
+        
+        //New parameters neeeded DeviceID
+        
+        
+        
         print("Firebase Token: -> \(token)")
         
         guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/user/check-or-create") else {
@@ -101,17 +92,17 @@ final class ApiService {
     
     
     //Sends the users current location to check in user
-    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double) async -> Result<CheckIn, LocationUpdateError>{
+    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckIn, LocationUpdateError>{
         
         guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
             return .failure(.invalidURL)
         }
-        
-        
-        
+        //http://localhost:3000/checkin/checkin
+        //"https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin"
         let body: [String: Any] = [
             "lat": latitude,
-            "lng": longitude
+            "lng": longitude,
+            "deviceID": deviceID
         ]
         
            print("From Application location: \(latitude) \(longitude)")

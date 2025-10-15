@@ -33,6 +33,7 @@
 		2970D8A22DF3FF6F00ACDD63 /* Exceptions for "WalletBuddy" folder in "WalletBuddy" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				.swift,
 				GraphQL/UpdateUserProfile.graphql,
 				Info.plist,
 			);
@@ -45,6 +46,7 @@
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 2970D88C2DF3FF6E00ACDD63 /* Sources */;
 			membershipExceptions = (
+				.swift,
 				GraphQL/UpdateUserProfile.graphql,
 			);
 		};

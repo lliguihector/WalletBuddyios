@@ -23,7 +23,7 @@ class LoginVC: UIViewController {
     
     let errorLabel = UILabel()
     
-    let signInButton = WBButton(backgroundColor: .systemBlue, title: "Sign In")
+    let signInButton = WBButton(backgroundColor: .systemBlue, title: "Log In")
     
     let forgotPasswordButton: UIButton = {
         let btn = UIButton(type: .system)
@@ -68,7 +68,7 @@ class LoginVC: UIViewController {
             action: #selector(backToLoginOptions)
         )
         backButton.title = "Back"
-        backButton.tintColor = .black
+        backButton.tintColor = UIColor.label
         navigationItem.leftBarButtonItem = backButton
     }
     
@@ -77,7 +77,7 @@ class LoginVC: UIViewController {
     func configureLoginLabel() {
         view.addSubview(loginLabel)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
-        loginLabel.text = "Log In"
+        loginLabel.text = "Welcome back!"
         loginLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         loginLabel.textColor = .label
         loginLabel.textAlignment = .center
@@ -122,7 +122,7 @@ class LoginVC: UIViewController {
         view.addSubview(showPasswordButton)
         
         let eyeClosed = UIImage(systemName: "eye.slash")
-        showPasswordButton.setImage(eyeClosed, for: .normal)
+        showPasswordButton.setImage(eyeClosed, for: .normal )
         showPasswordButton.tintColor = .systemGray
         showPasswordButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
         showPasswordButton.translatesAutoresizingMaskIntoConstraints = false
@@ -179,7 +179,7 @@ class LoginVC: UIViewController {
     
     @objc func togglePasswordVisibility() {
         passwordTextField.isSecureTextEntry.toggle()
-        let eyeImageName = passwordTextField.isSecureTextEntry ? "eye-slash" : "eye"
+        let eyeImageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
         showPasswordButton.setImage(UIImage(systemName: eyeImageName), for: .normal)
     }
     

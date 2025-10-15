@@ -25,7 +25,7 @@ struct MainView: View {
             
             WelcomeView()
                 .tabItem{
-                    Label("Updates", systemImage: "ellipsis.message.fill")
+                    Label("Board", systemImage: "bubble.left.fill")
                 }
             
             
