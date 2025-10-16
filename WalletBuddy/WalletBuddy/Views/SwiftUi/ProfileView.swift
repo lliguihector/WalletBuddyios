@@ -105,11 +105,11 @@ struct ProfileView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color(UIColor.systemBackground)) // Card color
+                        .background(Color.white.opacity(0.3)) // Card color
                         .cornerRadius(12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.gray, lineWidth: 1)
+                                .stroke(Color(UIColor.systemBackground), lineWidth: 1)
                         )
                         
                     }
