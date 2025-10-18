@@ -93,7 +93,7 @@ class AppViewModel: ObservableObject {
         if authService.isUserLoggedIn(){
             
             //Show skeleton immediately while we verify user
-            state = .loadingSkeleton
+//            state = .loadingSkeleton
  
             
           

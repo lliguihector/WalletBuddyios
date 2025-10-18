@@ -13,15 +13,19 @@ struct HomeTabView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var networkMonitor: NetworkMonitor
     
+    // MARK: - State
     @State private var showMapView = false
+    @StateObject private var homeVM = HomeViewModel() // ✅ Add HomeViewModel
+    
+    @State private var status: String = "Loading.."
+    @State private var statusColor: Color = .gray
+    @State private var statusIcon: String = "questionmark.circle"
+    @State private var timeSinceEvent: String = "..."
     
     var body: some View {
         ZStack {
-            
-            
             Color(UIColor.systemBackground)
                 .ignoresSafeArea()
-            
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -35,38 +39,102 @@ struct HomeTabView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top)
-
                     
                     // MARK: - Last Check-In Card
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "clock.fill")
-                                .foregroundColor(.blue)
-                            Text("Last Check-In")
-                                .font(.headline)
-                            Spacer()
+                    if let lastCheckin = homeVM.lastCheckin {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "clock.fill")
+                                    .foregroundColor(.blue)
+                                Text("Last Check-In")
+                                    .font(.headline)
+                                Spacer()
+                                
+                                VStack(alignment: .trailing, spacing: 2){
+                                    Label{
+                                        Text(status)
+                                            .font(.caption)
+                                            .bold()
+                                    }icon:{
+                                        Image(systemName: statusIcon)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(statusColor.opacity(0.15))
+                                    .foregroundColor(statusColor)
+                                    .clipShape(Capsule())
+                                    
+                                    Text(timeSinceEvent)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            HStack {
+                                Text("Date & Time:")
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened))
+                                    .foregroundColor(.primary)
+                            }
+                            
+                            Divider()
+                            
+                            HStack {
+                                Text("Location:")
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text("Room 201") // You can update dynamically later
+                                    .foregroundColor(.primary)
+                            }
                         }
-                        HStack {
-                            Text("Date & Time:")
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("Oct 14, 2025 at 2:01 AM") // Replace with dynamic date
-                                .foregroundColor(.primary)
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
+                        .padding(.horizontal)
+                        .onAppear {
+                            updateStatus(from: lastCheckin)
                         }
-                        Divider()
-                        HStack {
-                            Text("Location:")
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("Room 201") // Replace with dynamic device info
-                                .foregroundColor(.primary)
-                        }
+                    } else if homeVM.isLoading {
+                        
+                      CheckInSkeletonView()
+                    } else if homeVM.showFailureAlert {
+                        VStack(alignment: .leading, spacing: 12) {
+                            
+                            
+                            HStack {
+                                Image(systemName: "clock.fill")
+                                    .foregroundColor(.blue)
+                                Text("Last Check-In")
+                                    .font(.headline)
+                                Spacer()
+                                
+                           
+                            }
+                            Divider()
+                            VStack {
+                                Spacer() // pushes content down
+                                Text(homeVM.errorMessage ?? "No check-in data available")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding()
+                                Spacer() // pushes content up
+                            }
+                            .frame(maxWidth: .infinity) // full width
+                            .cornerRadius(16)
+                            .padding(.horizontal)
+
+                            
+                         
+                        } .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
+                            .padding(.horizontal)
+                       
                     }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
-                    .padding(.horizontal)
                     
                     // MARK: - Start Check-In Button
                     Button(action: { showMapView = true }) {
@@ -88,10 +156,11 @@ struct HomeTabView: View {
                 }
                 .padding(.vertical)
             }
-            
-            // MARK: - Map Sheet
             .sheet(isPresented: $showMapView) {
                 MapView()
+            }
+            .task {
+                await homeVM.fetchLastCheckin() // ✅ Fetch on appear
             }
             
             // MARK: - Offline Banner
@@ -109,8 +178,12 @@ struct HomeTabView: View {
             }
         }
     }
+
+
     
-    // MARK: - Greeting Logic
+    // MARK: - Helper Methods
+    
+    //Greeting Logic
     func greatingMessage() -> String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
@@ -120,4 +193,49 @@ struct HomeTabView: View {
         default: return "Good Night"
         }
     }
+    //Status Upate
+    func updateStatus(from checkin: CheckIn){
+
+
+        if checkin.checkedOut{
+            
+            status = "Checked Out"
+            statusColor = .red
+            statusIcon = "xmark.circle.fill"
+            
+            if let outTime = checkin.checkedOutTime{
+                timeSinceEvent = timeAgo(from: outTime)
+            }
+                
+                
+            
+        }else{
+            status = "Checked In"
+            statusColor = .green
+            statusIcon = "checkmark.circle.fill"
+            
+        
+            timeSinceEvent = timeAgo(from: checkin.checkInTime)
+        }
+        
+        
+    }
+    
+    //Format relative time
+    func timeAgo(from date: Date) -> String {
+        
+        let interval = Date().timeIntervalSince(date)
+        let hours = Int(interval/3600)
+        let minutes = Int(interval.truncatingRemainder(dividingBy: 3600))/60
+        
+        
+        if hours>0 {
+                return "\(hours)h \(minutes)m ago"
+        }else if minutes > 0{
+            return "\(minutes)m ago"
+        }else{
+            return "Just Now"
+        }
+    }
+    
 }

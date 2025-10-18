@@ -10,7 +10,7 @@ import CoreLocation
 import MapKit
 
 @MainActor
-class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
     
     private let manager = CLLocationManager()
     
@@ -29,22 +29,81 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.distanceFilter = 10 //Only update if user moved 10 meters (avoiding spam)
+        
+        
+//        manager.distanceFilter = kCLDistanceFilterNone
+//        manager.requestWhenInUseAuthorization()
+//        manager.startUpdatingLocation()
+    }
+    
+    
+    
+    //MARK: -- Location Permissions
+    func requestWhenInUseAuthorization(){
         manager.requestWhenInUseAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled(){
+            manager.startUpdatingLocation()
+        }else{
+            print("Location services are disabled.")
+        }
+    }
+    
+    //Stop updating location
+    func stopUpdatingLocation(){
         manager.startUpdatingLocation()
     }
     
+    //MARK: - Delegate Methods
+    
+    
+    //Called whenever user's location updates
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
         
-        //Update region
+        //Update the map region
         self.region = MKCoordinateRegion(
             center: location.coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
         )
         
         //Emit location to whoever is listening (ViewModel)
         
         onLocationUpdate?(location)
     }
+    
+
+    
+
+    
+    //Handle permission changes
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.startUpdatingLocation()
+        case .denied, .restricted:
+            print("Location access denied or restricted.")
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        @unknown default:
+            break
+        }
+        
+        
+        
+    }
+ 
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("❌ Location error: \(error.localizedDescription)")
+    }
+
+    
+    
+    
+    
+
+
 }

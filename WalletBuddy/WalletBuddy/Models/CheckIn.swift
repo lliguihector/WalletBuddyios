@@ -30,11 +30,17 @@ struct CheckIn: Codable{
     let _id: String
     let user: String
     let organization: String
-    let location: Location?
-    let distanceFromOrg: Double?
-    let checkInTime: String
+    let location: Location
+    let distanceFromOrg: Int
+    let checkedOut: Bool
+    let checkInTime: Date
+    let checkedOutTime: Date?
     let method: String
     let deviceID: String
+
+
+    
+    
     }
 
 

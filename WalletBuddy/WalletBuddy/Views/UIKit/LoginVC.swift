@@ -206,7 +206,7 @@ class LoginVC: UIViewController {
             
             switch result {
             case .success:
-                AppViewModel.shared.state = .loadingSkeleton
+//                AppViewModel.shared.state = .loadingSkeleton
                 await AppViewModel.shared.handleLoginSuccess(forecRefresh: true)
             case .failure(let message):
                 errorLabel.text = message

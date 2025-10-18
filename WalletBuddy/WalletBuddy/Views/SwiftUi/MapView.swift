@@ -11,6 +11,9 @@ import MapKit
 struct MapView: View {
     @StateObject private var viewModel = CheckInViewModel()
     @Environment(\.dismiss) private var dismiss
+    
+    
+    
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.3318, longitude: -122.031),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
@@ -140,6 +143,8 @@ struct MapView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
+        
+        //Request permission and start updating location whn view appears
         .animation(.easeInOut, value: showToast)
     }
 

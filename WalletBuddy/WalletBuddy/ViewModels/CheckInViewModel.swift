@@ -16,50 +16,73 @@ class CheckInViewModel: ObservableObject {
     @Published var showFailureAlert = false
     @Published var errorMessage: String? = nil
     @Published var isLoading: Bool = false
-   @Published var shouldFollowUser = true
+    @Published var shouldFollowUser = true
     
-    
-    
+    //MARK: - State
+    private(set) var lastKnownLocation: CLLocation?
+//    @Published var region: MKCoordinateRegion
+    @Published var isAuthorized: Bool = false
+
+
+
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    )
-
-    
-    
-  
-
+          center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+      )
     
     //MARK: - Dependencies
     private let apiService = ApiService.shared
     private let firebaseService = FirebaseAuthManager.shared
     private let locationManager = LocationManager()
 
-    //MARK: - State
-    private(set) var lastKnownLocation: CLLocation?
+
     
     
     
     
     //MARK: - Init
-    init() {
-        //Listen for location updates
-        locationManager.onLocationUpdate = { [weak self] location in
-            guard let self = self else { return }
-            self.lastKnownLocation = location
-            
-            if self.shouldFollowUser {
-                DispatchQueue.main.async {
-                    self.region = MKCoordinateRegion(
-                        center: location.coordinate,
-                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                    )
-                }
-            }
-        }
+    //MARK: - Init
+      init() {
+          //Listen for location updates
+          locationManager.onLocationUpdate = { [weak self] location in
+              guard let self = self else { return }
+              self.lastKnownLocation = location
+              
+              if self.shouldFollowUser {
+                  DispatchQueue.main.async {
+                      self.region = MKCoordinateRegion(
+                          center: location.coordinate,
+                          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                      )
+                  }
+              }
+          }
 
 
-    }
+      }
+//    init(locationManager: LocationManager = LocationManager()){
+//        
+//        self.locationManager = locationManager
+//        self.region = locationManager.region
+//        
+//        
+//        //Bind updates from LocationManager
+//        self.locationManager.onLocationUpdate = {[weak self] location in
+//            guard let self = self else {return}
+//            self.lastKnownLocation = location
+//            self.region = MKCoordinateRegion(
+//                center: location.coordinate,
+//                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.01)
+//            )
+//            
+//            
+//            
+//        }
+//        
+//        
+//        
+//        
+//    }
 
     //MARK: - Manual Check-In
     func checkinManually() async {
@@ -95,8 +118,6 @@ class CheckInViewModel: ObservableObject {
         }
     }
 
-    
-    
     
     
 private func handleLocationUpdate(_ location: CLLocation) async{
@@ -142,7 +163,6 @@ private func handleLocationUpdate(_ location: CLLocation) async{
             case .serializationError:
             errorMessage = "Could not prepare location data to send."
             case .decodingError:
-                
                 errorMessage = "Could not understand the server response"
             case .networkError(let err):
                 errorMessage = "Network issue: \(err.localizedDescription)"

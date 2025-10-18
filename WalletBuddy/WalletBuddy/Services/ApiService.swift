@@ -12,7 +12,7 @@ struct ErrorResponse: Decodable{
     let error: String
 }
 //Enumeration for checkin
-enum LocationUpdateError: Error{
+enum APIError: Error{
     case invalidURL
     case serializationError
     case decodingError
@@ -92,7 +92,7 @@ final class ApiService {
     
     
     //Sends the users current location to check in user
-    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckIn, LocationUpdateError>{
+    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckIn, APIError>{
         
         guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
             return .failure(.invalidURL)
@@ -159,10 +159,6 @@ final class ApiService {
     
     //MARK: -- Register Device with backend
    
-    
-    
-    
-    
     func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
         
         print("Data sent to API...")
@@ -179,4 +175,76 @@ final class ApiService {
     
     //Wherever called on Success call apppViewModel logginSuccess() to SYNC model and UI
     
+    
+    
+    //MARK: - Fetch last checkin
+    // MARK: - Fetch last check-in
+    func fetchLastCheckin(token: String) async -> Result<CheckIn, APIError> {
+        
+        // 1️⃣ URL
+        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/lastCheckin") else {
+            print("❌ Invalid URL")
+            return .failure(.invalidURL)
+        }
+        
+        print("➡️ Fetching last check-in from URL: \(url)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        do {
+            // 2️⃣ Perform network request
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // 3️⃣ Validate HTTP response
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("❌ Invalid response object")
+                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+            }
+            
+            print("📶 HTTP status code: \(httpResponse.statusCode)")
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                print("❌ Server returned error status: \(httpResponse.statusCode)")
+                
+                if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+                    print("❌ Server error message: \(errorResponse.error)")
+                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: errorResponse.error))
+                } else {
+                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+                    print("❌ Server returned: \(message)")
+                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+                }
+            }
+            
+            // 4️⃣ Decode JSON into CheckIn
+            let decoder = JSONDecoder()
+            
+            // Custom DateFormatter to handle milliseconds and 'Z'
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            decoder.dateDecodingStrategy = .formatted(formatter)
+            
+            do {
+                let checkin = try decoder.decode(CheckIn.self, from: data)
+                print("✅ Decoded CheckIn: \(checkin)")
+                return .success(checkin)
+            } catch {
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("❌ Decoding error. Raw JSON: \(jsonString)")
+                }
+                print("❌ Decoding error: \(error.localizedDescription)")
+                return .failure(.decodingError)
+            }
+            
+        } catch {
+            print("❌ Network error: \(error.localizedDescription)")
+            return .failure(.networkError(error))
+        }
+    }
+
 }
