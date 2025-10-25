@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import Foundation
 
 struct HomeTabView: View {
     @EnvironmentObject var userViewModel: UserViewModel
@@ -22,6 +23,12 @@ struct HomeTabView: View {
     @State private var statusIcon: String = "questionmark.circle"
     @State private var timeSinceEvent: String = "..."
     
+    
+    
+    //Toast State
+    @State private var toastMessage: String? = nil
+    @State private var showToast = false
+    @State private var toastIsError = false
     var body: some View {
         ZStack {
             Color(UIColor.systemBackground)
@@ -74,10 +81,26 @@ struct HomeTabView: View {
                                 Text("Date & Time:")
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Text(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened))
-                                    .foregroundColor(.primary)
+                                
+                                if lastCheckin.checkedOut, let outTime = lastCheckin.checkedOutTime {
+                                    // Show range when checked out
+                                    Text("\(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened)) - \(outTime.formatted(date: .abbreviated, time: .shortened))")
+                                        .foregroundColor(.primary)
+                                } else {
+                                    // Show only check-in time when active
+                                    Text(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened))
+                                        .foregroundColor(.primary)
+                                }
                             }
-                            
+                            if lastCheckin.checkedOut,
+                               let outTime = lastCheckin.checkedOutTime {
+                                let duration = outTime.timeIntervalSince(lastCheckin.checkInTime)
+                                Text("Duration: \(formatDuration(duration))")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                      
                             Divider()
                             
                             HStack {
@@ -87,6 +110,13 @@ struct HomeTabView: View {
                                 Text("Room 201") // You can update dynamically later
                                     .foregroundColor(.primary)
                             }
+                            
+                            
+                            //
+                            
+                            
+                            
+                            
                         }
                         .padding()
                         .background(.ultraThinMaterial)
@@ -98,7 +128,7 @@ struct HomeTabView: View {
                         }
                     } else if homeVM.isLoading {
                         
-                      CheckInSkeletonView()
+                        CheckInSkeletonView()
                     } else if homeVM.showFailureAlert {
                         VStack(alignment: .leading, spacing: 12) {
                             
@@ -110,7 +140,7 @@ struct HomeTabView: View {
                                     .font(.headline)
                                 Spacer()
                                 
-                           
+                                
                             }
                             Divider()
                             VStack {
@@ -125,18 +155,68 @@ struct HomeTabView: View {
                             .frame(maxWidth: .infinity) // full width
                             .cornerRadius(16)
                             .padding(.horizontal)
-
                             
-                         
+                            
+                            
                         } .padding()
                             .background(.ultraThinMaterial)
                             .cornerRadius(16)
                             .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
                             .padding(.horizontal)
-                       
+                        
                     }
                     
+                    
+                    
                     // MARK: - Start Check-In Button
+                    
+                    
+                    if let lastCheckin = homeVM.lastCheckin, lastCheckin.checkedOut == false{
+                        
+                        Button(action: {
+                            //MARK: - CHECKOUT
+                            print("Checked Out Button Pressed")
+                            Task{
+                                await homeVM.checkoutUser()
+                                
+                                if homeVM.showSuccessAlert{
+                                    
+                                    //Refresh the latest check-in to refresh the UI
+                                    await homeVM.fetchLastCheckin()
+                                    
+                                    if let lastCheckin = homeVM.lastCheckin{
+                                        updateStatus(from: lastCheckin)
+                                    }
+                                    
+                                    
+                                    toastMessage = homeVM.successMessage
+                                    toastIsError = false
+                                    showToastWithAutoDismiss()
+                                
+                                }else if homeVM.showFailureAlert{
+                                    toastMessage = homeVM.errorMessage ?? "An error occurred."
+                                    toastIsError = true
+                                    showToastWithAutoDismiss()
+                                }
+                                
+                            }
+
+                        }) {
+                            
+                            HStack{
+                                Image(systemName: "clock.badge.xmark")
+                                Text("Check Out")
+                                    .fontWeight(.semibold)
+                            }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(LinearGradient(colors: [Color.red, Color.pink], startPoint: .leading, endPoint: .trailing))
+                        .foregroundColor(.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+                    }
+                        .padding(.horizontal)
+                }else{
                     Button(action: { showMapView = true }) {
                         HStack {
                             Image(systemName: "clock.badge.checkmark")
@@ -151,13 +231,21 @@ struct HomeTabView: View {
                         .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
                     }
                     .padding(.horizontal)
-                    
+                }
                     Spacer()
                 }
                 .padding(.vertical)
             }
             .sheet(isPresented: $showMapView) {
-                MapView()
+                MapView(onCheckinSuccess:{
+                    Task{
+                        await homeVM.fetchLastCheckin()
+                        
+                        if let lastCheckin = homeVM.lastCheckin{
+                            updateStatus(from: lastCheckin)
+                        }
+                    }
+                })
             }
             .task {
                 await homeVM.fetchLastCheckin() // ✅ Fetch on appear
@@ -176,7 +264,29 @@ struct HomeTabView: View {
                 .transition(.move(edge: .top))
                 .zIndex(1)
             }
-        }
+            
+            //MARK: - Loading Spinner
+            
+            if homeVM.isLoading {
+                LoadingSpinnerView()
+                    .transition(.opacity)
+                    .zIndex(2)
+            }
+            
+            //MARK: - Toast
+            if showToast, let message = toastMessage {
+                VStack{
+                    WBToast(message: message, isError: toastIsError)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top,50)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .zIndex(3)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }//end ZStack
+        .animation(.easeInOut, value: showToast)
     }
 
 
@@ -225,17 +335,47 @@ struct HomeTabView: View {
     func timeAgo(from date: Date) -> String {
         
         let interval = Date().timeIntervalSince(date)
+        
+        let minutes = Int(interval/60)
         let hours = Int(interval/3600)
-        let minutes = Int(interval.truncatingRemainder(dividingBy: 3600))/60
+        let days = Int(interval/86400)//24*3600
+        let weeks = Int(interval/604800)//7*86400
         
         
-        if hours>0 {
-                return "\(hours)h \(minutes)m ago"
-        }else if minutes > 0{
+        if weeks > 0 {
+            return "\(weeks)w ago"
+        }else if days > 0{
+            return "\(days)d ago"
+        }else if hours>0{
+            let remainingMinutes = (minutes%60)
+            return "\(hours)h \(remainingMinutes)m ago"
+        }else if minutes>0{
             return "\(minutes)m ago"
         }else{
-            return "Just Now"
+            return "Just now"
         }
+        
+        
+        
     }
     
+    func formatDuration(_ interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+
+    
+    
+    // MARK: - Toast Auto Dismiss
+    private func showToastWithAutoDismiss() {
+        withAnimation { showToast = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation { showToast = false }
+        }
+    }
 }

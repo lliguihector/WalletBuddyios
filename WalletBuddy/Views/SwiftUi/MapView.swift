@@ -13,6 +13,9 @@ struct MapView: View {
     @Environment(\.dismiss) private var dismiss
     
     
+    //Call Back Function
+    
+    var onCheckinSuccess: (() -> Void)?
     
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.3318, longitude: -122.031),
@@ -99,6 +102,17 @@ struct MapView: View {
                             toastMessage = "Check-in successful!"
                             toastIsError = false
                             showToastWithAutoDismiss()
+                            
+                            
+                            onCheckinSuccess?()
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                         dismiss()
+                                                     }
+                            
+                            
+                            
+                            
                         } else if viewModel.showFailureAlert {
                             toastMessage = viewModel.errorMessage ?? "An error occurred."
                             toastIsError = true

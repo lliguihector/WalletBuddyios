@@ -20,6 +20,15 @@ enum APIError: Error{
     case serverError(statusCode: Int, message: String?)
 }
 
+enum CheckoutError: Error {
+    case invalidURL
+    case networkError(Error)
+    case alreadyCheckedOut
+    case noCheckinFound
+    case serverError(message: String?)
+}
+
+
 
 
 final class ApiService {
@@ -92,7 +101,7 @@ final class ApiService {
     
     
     //Sends the users current location to check in user
-    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckIn, APIError>{
+    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckInResponse, APIError>{
         
         guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
             return .failure(.invalidURL)
@@ -141,7 +150,7 @@ final class ApiService {
             let decoder = JSONDecoder()
             decoder.dataDecodingStrategy = .base64
             let decodedResponse = try decoder.decode(CheckInResponse.self, from: data)
-            return .success(decodedResponse.checkIn)
+            return .success(decodedResponse)
             
             
             
@@ -246,5 +255,47 @@ final class ApiService {
             return .failure(.networkError(error))
         }
     }
+    
+    
+    
+    //CHECKOUT
+    func checkout(firebaseIDToken: String) async -> Result<String, APIError> {
+        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkout") else {
+            return .failure(.invalidURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(firebaseIDToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
+            }
+
+            // Try to parse server message from response
+            var message: String? = nil
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                message = json["message"] as? String
+            }
+
+            switch httpResponse.statusCode {
+            case 200:
+                return .success(message ?? "Successfully checked out")
+            case 400, 404:
+                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+            default:
+                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+            }
+
+        } catch {
+            return .failure(.networkError(error))
+        }
+    }
+
+
 
 }

@@ -9,18 +9,6 @@ import Foundation
 struct CheckInResponse: Codable{
     let success: Bool
     let message: String
-    let checkIn: CheckIn
-    let distance: Double
-    
-    
-    enum CodingKeys: String, CodingKey
-    {
-        case success
-        case message
-        case checkIn = "checkIn"
-        case distance
-        
-    }
 
 }
 

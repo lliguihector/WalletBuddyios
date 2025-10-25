@@ -38,6 +38,7 @@ final class UserRepository {
     func updateLoginState(userId: String, isLoggedIn: Bool) {
         if let user = fetchUser(byId: userId) {
 //            user.isLoggedIn = isLoggedIn
+            print("\(user)")
             saveContext()
         }
     }
