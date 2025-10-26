@@ -7,9 +7,14 @@
 import Foundation
 import CoreLocation
 import MapKit
+import SwiftUI
 
-@MainActor
-class CheckInViewModel: ObservableObject {
+
+class MapViewModel: ObservableObject {
+    
+    //MARK: -- Enviornment Objects
+    @EnvironmentObject var userViewModel: UserViewModel
+    
     
     //MARK: - Published Properties
     @Published var showSuccessAlert = false
@@ -17,18 +22,20 @@ class CheckInViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var isLoading: Bool = false
     @Published var shouldFollowUser = true
-    
+    @Published var isAuthorized: Bool = false
     //MARK: - State
     private(set) var lastKnownLocation: CLLocation?
-//    @Published var region: MKCoordinateRegion
-    @Published var isAuthorized: Bool = false
+    
+    
+    
+    //USER & ORGANIZATION Coordinates
+    @Published var userCoordinate: CLLocationCoordinate2D?
+    @Published var organizationCoordinate: CLLocationCoordinate2D?
+    @Published var region: MKCoordinateRegion?
+    @Published var organizationCamera: MapCameraPosition?
+    
+    
 
-
-
-    @Published var region: MKCoordinateRegion = MKCoordinateRegion(
-          center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-      )
     
     //MARK: - Dependencies
     private let apiService = ApiService.shared
@@ -36,55 +43,59 @@ class CheckInViewModel: ObservableObject {
     private let locationManager = LocationManager()
 
 
-    
-    
-    
-    
-    //MARK: - Init
-    //MARK: - Init
-      init() {
-          //Listen for location updates
-          locationManager.onLocationUpdate = { [weak self] location in
-              guard let self = self else { return }
-              self.lastKnownLocation = location
-              
-              if self.shouldFollowUser {
-                  DispatchQueue.main.async {
-                      self.region = MKCoordinateRegion(
-                          center: location.coordinate,
-                          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                      )
-                  }
-              }
-          }
 
+    //MARK: - Init
+    init(userViewModel: UserViewModel) {
+        
+        //Observ userViewModel for organization location
+//        if let orgLocation = userViewModel.appUser?.organization?.location.coordinates,
+//        orgLocation.count == 2{
+//            organizationCoordinate = CLLocationCoordinate2D(latitude: orgLocation[0], longitude: orgLocation[1])
+//        }else{
+//            //Fallback to default location (can be city center or 0,0)
+//            organizationCoordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+//            print("Organization location not found, using default coordinates")
+//        }
+          
+        
+        if let coords = userViewModel.appUser?.organization?.location.coordinates,
+           coords.count == 2 {
+            let orgCoord = CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
+            organizationCoordinate = orgCoord
+            
+            organizationCamera = .region(
+                .init(
+                    center: orgCoord,
+                    latitudinalMeters: 100,
+                    longitudinalMeters: 100
+                )
+            )
+        }
+
+        
+          
+          
+          
+//          //Listen for location updates
+//          locationManager.onLocationUpdate = { [weak self] location in
+//              guard let self = self else { return }
+//              self.lastKnownLocation = location
+//              
+//              if self.shouldFollowUser {
+//                  DispatchQueue.main.async {
+//                      self.region = MKCoordinateRegion(
+//                          center: location.coordinate,
+//                          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+//                      )
+//                  }
+//              }
+//          }
+        print("\(organizationCoordinate)")
 
       }
-//    init(locationManager: LocationManager = LocationManager()){
-//        
-//        self.locationManager = locationManager
-//        self.region = locationManager.region
-//        
-//        
-//        //Bind updates from LocationManager
-//        self.locationManager.onLocationUpdate = {[weak self] location in
-//            guard let self = self else {return}
-//            self.lastKnownLocation = location
-//            self.region = MKCoordinateRegion(
-//                center: location.coordinate,
-//                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.01)
-//            )
-//            
-//            
-//            
-//        }
-//        
-//        
-//        
-//        
-//    }
 
-    //MARK: - Manual Check-In
+//MARK: - -------------- DATA MANIPULATION FUNCTION ---------
+    //MARK: - Manual Check-In User
     func checkinManually() async {
         guard let location = lastKnownLocation else{
             print("No last known location to check in with.")
@@ -95,31 +106,7 @@ class CheckInViewModel: ObservableObject {
     
 
 
-    //MARK: - Fit Map to User + Organization
-    //Update map region to fit multiple coordinates (user + organizations)
-    func updateRegionToFit(userLocation: CLLocation?, organizationCoordinates: [CLLocationCoordinate2D]) {
-        var allCoords: [CLLocationCoordinate2D] = organizationCoordinates
-        if let user = userLocation {
-            allCoords.append(user.coordinate)
-        }
-        guard !allCoords.isEmpty else { return }
-
-        let latitudes = allCoords.map { $0.latitude }
-        let longitudes = allCoords.map { $0.longitude }
-
-        let center = CLLocationCoordinate2D(latitude: (latitudes.min()! + latitudes.max()!) / 2,
-                                            longitude: (longitudes.min()! + longitudes.max()!) / 2)
-        let span = MKCoordinateSpan(latitudeDelta: (latitudes.max()! - latitudes.min()!) * 1.5,
-                                    longitudeDelta: (longitudes.max()! - longitudes.min()!) * 1.5)
-
-        // Use async dispatch to avoid publishing during view updates
-        DispatchQueue.main.async {
-            self.region = MKCoordinateRegion(center: center, span: span)
-        }
-    }
-
-    
-    
+    //MARK: - CHECK IN USER TO backen
 private func handleLocationUpdate(_ location: CLLocation) async{
         isLoading = true
     defer{isLoading = false}//Always hide loading on exit (success or failure)

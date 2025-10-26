@@ -35,7 +35,7 @@ struct LoginOptionsView: View {
                         .frame(width: 70, height: 70)
                         .shadow(radius: 4)
                     
-                    Text("Welcome to SafetyWorks!")
+                    Text("Welcome to groupWorks!")
                         .font(.title2)
                         .bold()
                         .multilineTextAlignment(.center)

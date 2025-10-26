@@ -237,7 +237,7 @@ struct HomeTabView: View {
                 .padding(.vertical)
             }
             .sheet(isPresented: $showMapView) {
-                MapView(onCheckinSuccess:{
+                MapView(userViewModel: userViewModel){
                     Task{
                         await homeVM.fetchLastCheckin()
                         
@@ -245,7 +245,8 @@ struct HomeTabView: View {
                             updateStatus(from: lastCheckin)
                         }
                     }
-                })
+                }
+                .environmentObject(userViewModel)
             }
             .task {
                 await homeVM.fetchLastCheckin() // ✅ Fetch on appear

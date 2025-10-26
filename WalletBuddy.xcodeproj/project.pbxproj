@@ -260,13 +260,13 @@
 				DEVELOPMENT_TEAM = FLMQ8FUJ4T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WalletBuddy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Colony ";
+				INFOPLIST_KEY_CFBundleDisplayName = groupWorks;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -290,13 +290,13 @@
 				DEVELOPMENT_TEAM = FLMQ8FUJ4T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WalletBuddy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Colony ";
+				INFOPLIST_KEY_CFBundleDisplayName = groupWorks;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
