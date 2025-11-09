@@ -11,12 +11,14 @@ import Foundation
 class HomeViewModel: ObservableObject{
     //MARK: - Properties
     @Published var isLoading: Bool = false
+    @Published var isLoadingActiveUsers: Bool = false
     @Published var showFailureAlert: Bool = false
     @Published var errorMessage: String? = nil
+    @Published var activeUsersError: String? = nil
     @Published var lastCheckin: CheckIn?
     @Published var successMessage: String? = nil
     @Published var showSuccessAlert = false
-    
+    @Published var users: [CheckedInUser] = []
     
     
 //MARK: -  SATATUS UPDATE
@@ -30,6 +32,8 @@ class HomeViewModel: ObservableObject{
     private var apiService = ApiService.shared
     private var firebaseService = FirebaseAuthManager.shared
     
+    
+    //MARK: - FETCH USER MOST RESETN CHECK-IN
     func fetchLastCheckin() async{
         
     isLoading = true
@@ -80,9 +84,7 @@ class HomeViewModel: ObservableObject{
         
     }
     
-    
-    //CHECK OUT USER
-    // CHECK OUT USER
+    //MARK: - CHECK OUT USER
     func checkoutUser() async {
         isLoading = true
         defer { isLoading = false }
@@ -129,8 +131,60 @@ class HomeViewModel: ObservableObject{
         }
     }
 
-    
-    
+    //MARK: - GET ARRAY OF CHECKED-IN USERS WITHIN USER ORGANIZATION
+    func loadCheckedInUsers() async {
+        isLoadingActiveUsers = true
+        defer {isLoadingActiveUsers = false}
+        
+        
+        do{
+            
+            //Get Firebase ID token
+            guard let idToken = try await firebaseService.getIDToken(forceRefresh: true)else{
+                showFailureAlert = true
+                errorMessage = "Authentication failed. Please log in again."
+                return
+            }
+            //Call API
+            let result = await apiService.fetchCheckedInUsers(token: idToken)
+            
+            
+            //Handle resulr
+            switch result{
+            case .success(let fetchedUsers):
+                self.users = fetchedUsers
+                self.showFailureAlert = false
+                self.activeUsersError = nil
+                
+                if fetchedUsers.isEmpty{
+                    print("No users currently checked in.")
+                }
+                
+            case .failure(let error):
+//                self.showFailureAlert = true
+                
+                switch error{
+                case .invalidURL:
+                    activeUsersError = "Invalid URL"
+                case . networkError(let err):
+                    activeUsersError = "Network Error: \(err.localizedDescription)"
+                case .decodingError:
+                    activeUsersError = "Failed to decode server response"
+                case .serverError( _ , let message):
+                    //Use backend's actual error message, or a dedault
+                    activeUsersError = message ?? "Server rejected the request."
+                case .serializationError:
+                    activeUsersError = "Serialization error."
+                }
+                print("API Error: \(errorMessage ?? "Unknown")")
+            }
+                    
+            
+        }catch{
+//            showFailureAlert = true
+            activeUsersError = "Unexpected error: \(error.localizedDescription)"
+        }
+    }
     
     
 }

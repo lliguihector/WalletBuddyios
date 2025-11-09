@@ -7,9 +7,9 @@
 import Foundation
 
 
-struct AppUser: Codable{
+struct AppUser: Codable, Identifiable{
 
-    
+    let id: String
     let uid: String    //Firebase UID
     let email: String
     let emailVerified: Bool
@@ -22,6 +22,24 @@ struct AppUser: Codable{
     let organization: Organization?
     let devices: [Device]?
     
+    var fullName: String {"\(firstName) \(lastName)"}
+    
+    
+    enum CodingKeys: String, CodingKey{
+        case id = "_id"
+        case uid
+        case email
+        case emailVerified
+        case onboardingStep
+        case firstName
+        case lastName
+        case providerIds
+        case profileImageUrl
+        case title
+        case organization
+        case devices
+        
+    }
 
 }
 

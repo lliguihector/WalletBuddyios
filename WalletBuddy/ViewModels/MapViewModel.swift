@@ -77,20 +77,19 @@ class MapViewModel: ObservableObject {
           
           
 //          //Listen for location updates
-//          locationManager.onLocationUpdate = { [weak self] location in
-//              guard let self = self else { return }
-//              self.lastKnownLocation = location
-//              
-//              if self.shouldFollowUser {
-//                  DispatchQueue.main.async {
-//                      self.region = MKCoordinateRegion(
-//                          center: location.coordinate,
-//                          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-//                      )
-//                  }
-//              }
-//          }
-        print("\(organizationCoordinate)")
+          locationManager.onLocationUpdate = { [weak self] location in
+              guard let self = self else { return }
+              self.lastKnownLocation = location
+              
+              if self.shouldFollowUser {
+                  DispatchQueue.main.async {
+                      self.region = MKCoordinateRegion(
+                          center: location.coordinate,
+                          span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                      )
+                  }
+              }
+          }
 
       }
 

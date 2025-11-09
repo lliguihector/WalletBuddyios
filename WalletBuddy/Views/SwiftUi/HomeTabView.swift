@@ -47,13 +47,16 @@ struct HomeTabView: View {
                     .padding(.horizontal)
                     .padding(.top)
                     
+                    
+                    
+                    
                     // MARK: - Last Check-In Card
                     if let lastCheckin = homeVM.lastCheckin {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Image(systemName: "clock.fill")
                                     .foregroundColor(.blue)
-                                Text("Last Check-In")
+                                Text("Recent Check-In")
                                     .font(.headline)
                                 Spacer()
                                 
@@ -77,37 +80,67 @@ struct HomeTabView: View {
                                 }
                             }
                             
-                            HStack {
-                                Text("Date & Time:")
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                
+                            VStack(alignment: .leading, spacing: 12) {
+
+                                // In Time
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("In")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .bold()
+                                    Text(lastCheckin.checkInTime.formatted(
+                                        .dateTime.weekday(.wide)
+                                        .month(.abbreviated)
+                                        .day()
+                                        .hour()
+                                        .minute()
+                                    ))
+                                    .foregroundColor(.primary)
+                                    .font(.subheadline)
+                                }
+
+                                // Out Time with Duration on the far right
                                 if lastCheckin.checkedOut, let outTime = lastCheckin.checkedOutTime {
-                                    // Show range when checked out
-                                    Text("\(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened)) - \(outTime.formatted(date: .abbreviated, time: .shortened))")
-                                        .foregroundColor(.primary)
-                                } else {
-                                    // Show only check-in time when active
-                                    Text(lastCheckin.checkInTime.formatted(date: .abbreviated, time: .shortened))
-                                        .foregroundColor(.primary)
+                                    HStack(alignment: .top) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Out")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                                .bold()
+                                            Text(outTime.formatted(
+                                                .dateTime.weekday(.wide)
+                                                .month(.abbreviated)
+                                                .day()
+                                                .hour()
+                                                .minute()
+                                            ))
+                                            .foregroundColor(.primary)
+                                            .font(.subheadline)
+                                        }
+                                        Spacer()
+                                        // Duration
+                                        let duration = outTime.timeIntervalSince(lastCheckin.checkInTime)
+                                        Text(formatDuration(duration))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .padding(.top, 2) // aligns with the time text
+                                    }
                                 }
                             }
-                            if lastCheckin.checkedOut,
-                               let outTime = lastCheckin.checkedOutTime {
-                                let duration = outTime.timeIntervalSince(lastCheckin.checkInTime)
-                                Text("Duration: \(formatDuration(duration))")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
 
-                      
+                            
+                            
+                            
+                            
+                            
+                            
                             Divider()
                             
                             HStack {
-                                Text("Location:")
+                                Text("Where:")
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Text("Room 201") // You can update dynamically later
+                                Text("Room 101") // You can update dynamically later
                                     .foregroundColor(.primary)
                             }
                             
@@ -126,17 +159,22 @@ struct HomeTabView: View {
                         .onAppear {
                             updateStatus(from: lastCheckin)
                         }
+                        
+                        
+                        //if CHeckin data is being fetch show loadingview
                     } else if homeVM.isLoading {
                         
                         CheckInSkeletonView()
-                    } else if homeVM.showFailureAlert {
+                    }
+                    //If api error or last check in = nil display placeholder view 
+                    else if homeVM.showFailureAlert || homeVM.lastCheckin == nil{
                         VStack(alignment: .leading, spacing: 12) {
                             
                             
                             HStack {
                                 Image(systemName: "clock.fill")
                                     .foregroundColor(.blue)
-                                Text("Last Check-In")
+                                Text("Recent Check-In")
                                     .font(.headline)
                                 Spacer()
                                 
@@ -192,7 +230,7 @@ struct HomeTabView: View {
                                     toastMessage = homeVM.successMessage
                                     toastIsError = false
                                     showToastWithAutoDismiss()
-                                
+                                    
                                 }else if homeVM.showFailureAlert{
                                     toastMessage = homeVM.errorMessage ?? "An error occurred."
                                     toastIsError = true
@@ -200,7 +238,7 @@ struct HomeTabView: View {
                                 }
                                 
                             }
-
+                            
                         }) {
                             
                             HStack{
@@ -208,49 +246,107 @@ struct HomeTabView: View {
                                 Text("Check Out")
                                     .fontWeight(.semibold)
                             }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(LinearGradient(colors: [Color.red, Color.pink], startPoint: .leading, endPoint: .trailing))
-                        .foregroundColor(.white)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
-                    }
-                        .padding(.horizontal)
-                }else{
-                    Button(action: { showMapView = true }) {
-                        HStack {
-                            Image(systemName: "clock.badge.checkmark")
-                            Text("Start Check-In")
-                                .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(LinearGradient(colors: [Color.red, Color.pink], startPoint: .leading, endPoint: .trailing))
+                            .foregroundColor(.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .leading, endPoint: .trailing))
-                        .foregroundColor(.white)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+                        .padding(.horizontal)
+                    }else{
+                        Button(action: { showMapView = true }) {
+                            HStack {
+                                Image(systemName: "clock.badge.checkmark")
+                                Text("Start Check-In")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .leading, endPoint: .trailing))
+                            .foregroundColor(.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    
+                    //MARK: - "Currently Online" Title
+                    HStack(alignment: .center){
+                        Rectangle()
+                            .fill(
+                                LinearGradient(colors: [.blue, .gray], startPoint: .leading, endPoint: .trailing)
+                            
+                    )
+                    .frame(width: 5, height: 25)
+                    .cornerRadius(2)
+                    Text("Currently On Site")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
                 }
+                .padding(.horizontal)
+                .padding(.top,4)
+                    
+                
+//MARK: - ACTIVE USERS LIST
+                    
+                    
+                    
+                    VStack(spacing: 12){
+                        if homeVM.isLoadingActiveUsers{
+                            ProgressView("Loading Active Users...")
+                                .frame(maxWidth: .infinity)
+                        }else if let error = homeVM.activeUsersError{
+                            Text(error).foregroundColor(.red).multilineTextAlignment(.center).frame(maxWidth: .infinity)
+                        }else if homeVM.users.isEmpty{
+                            Text("No users currently checked in").foregroundColor(.secondary).frame(maxWidth: .infinity)
+                        }else{
+                            ForEach(homeVM.users) { user in
+                                UserCardView(
+                                    imageURL: user.profileImageUrl,
+                                    name: user.name,
+                                    subtitle: user.title ?? "No title set",
+                                    isOnline: true,
+                                    userId: user.id,// The ID from your API
+                                    currentUserId: userViewModel.appUser?.id, // Your logged-in user
+                                    onMessageTap: {
+                                        print("Message tapped for \(user.name)")
+                                    }
+                                )
+                                .padding(.horizontal)
+                            }
+
+                        }
+                        
+                        
+                        
+                    }
+                    .padding(.vertical)
                     Spacer()
                 }
                 .padding(.vertical)
             }
-            .sheet(isPresented: $showMapView) {
-                MapView(userViewModel: userViewModel){
-                    Task{
+            .fullScreenCover(isPresented: $showMapView) {
+                MapView(userViewModel: userViewModel) {
+                    Task {
                         await homeVM.fetchLastCheckin()
-                        
-                        if let lastCheckin = homeVM.lastCheckin{
+                        if let lastCheckin = homeVM.lastCheckin {
                             updateStatus(from: lastCheckin)
                         }
                     }
                 }
                 .environmentObject(userViewModel)
             }
+
             .task {
                 await homeVM.fetchLastCheckin() // ✅ Fetch on appear
+                await homeVM.loadCheckedInUsers()
             }
+            
+            
+            
             
             // MARK: - Offline Banner
             if !networkMonitor.isConnected {

@@ -26,9 +26,25 @@ struct CheckIn: Codable{
     let method: String
     let deviceID: String
 
-
-    
-    
     }
 
+import Foundation
+
+// MARK: - Single Checked-In User
+struct CheckedInUser: Codable, Identifiable {
+    let id: String       // map from "userId"
+    let name: String
+    let title: String?
+    let email: String?
+    let profileImageUrl: String?
+
+    // Coding keys to match JSON keys
+    enum CodingKeys: String, CodingKey {
+        case id = "userId"
+        case name
+        case title
+        case email
+        case profileImageUrl
+    }
+}
 
