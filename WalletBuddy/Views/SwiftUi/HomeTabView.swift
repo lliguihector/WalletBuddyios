@@ -166,7 +166,7 @@ struct HomeTabView: View {
                         
                         CheckInSkeletonView()
                     }
-                    //If api error or last check in = nil display placeholder view 
+                    //else if
                     else if homeVM.showFailureAlert || homeVM.lastCheckin == nil{
                         VStack(alignment: .leading, spacing: 12) {
                             

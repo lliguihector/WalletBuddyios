@@ -295,6 +295,48 @@ final class ApiService {
         }
     }
     
+    //MARK: - Fetch Messages
+        
+//    func fetchMessasges(user1: String, user2:String)async -> Result<[Message], APIError>{
+//            
+//         //URL
+//        guard let url = URL("")else{
+//            print("Invalid URL")
+//            return .failure(.invalidURL)
+//        }
+//        
+//        do{
+//            //Create URLRequest if needed
+//            var request = URLRequest(url:url)
+//            request.httpMethod = "GET"
+//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//            
+//            
+//            //Perform network call
+//            let (data, response) = try await URLSession.shared.data(for: request)
+//            
+//            
+//            //Check HTTP response
+//            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200{
+//                print("Server returned status code:", httpResponse.statusCode)
+//                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
+//            }
+//            
+//            
+//            //Decoding JSON
+//            let message = try JSONDecoder().decode([Message].self, from: data)
+//            return .success(message)
+//            
+//            
+//        }catch{
+//            print("Error fetching messafes:", error)
+//            return .failure(.decodingError)
+//        }
+//        
+//            
+//            
+//        }
+//    
     //MARK: - GET CURRENT USERS CHECKED IN BELONGING WITHIN USER ORGANIZATION
     func fetchCheckedInUsers(token: String) async -> Result<[CheckedInUser], APIError> {
         

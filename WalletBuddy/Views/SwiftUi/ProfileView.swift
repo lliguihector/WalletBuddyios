@@ -93,7 +93,7 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal)
                     
-                    // MARK: - Logout Button
+
                     // MARK: - Logout Button
                     Button(action: { appViewModel.logout() }) {
                         HStack {
