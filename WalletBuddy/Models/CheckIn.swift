@@ -33,6 +33,7 @@ import Foundation
 // MARK: - Single Checked-In User
 struct CheckedInUser: Codable, Identifiable {
     let id: String       // map from "userId"
+    let uid: String
     let name: String
     let title: String?
     let email: String?
@@ -41,6 +42,7 @@ struct CheckedInUser: Codable, Identifiable {
     // Coding keys to match JSON keys
     enum CodingKeys: String, CodingKey {
         case id = "userId"
+        case uid 
         case name
         case title
         case email

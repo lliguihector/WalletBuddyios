@@ -22,6 +22,10 @@ struct ChatView: View {
                 // 📩 Messages list
                 ScrollView {
                     LazyVStack(spacing: 12) {
+                        
+                        
+                        
+                        
                         ForEach(socketService.messages) { msg in
 
                             MessageBubble(
@@ -99,7 +103,7 @@ struct ChatView: View {
 
     private func sendMessage() {
         guard !currentMessage.isEmpty else { return }
-        socketService.sendMessage(currentMessage)
+        socketService.sendMessage(currentMessage, to: userId)
         currentMessage = ""
     }
 }

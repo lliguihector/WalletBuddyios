@@ -8,6 +8,7 @@ import SwiftUI
 
     struct UserCardView: View {
         var imageURL: String?
+        var uid: String
         var name: String
         var subtitle: String
         var isOnline: Bool
@@ -90,7 +91,7 @@ import SwiftUI
                 }
             }
             .fullScreenCover(isPresented: $showChat) {
-                ChatView(userId: userId, userName: name,imageURL: imageURL, isPresented: $showChat)
+                ChatView(userId: uid, userName: name,imageURL: imageURL, isPresented: $showChat)
             }
         }
         

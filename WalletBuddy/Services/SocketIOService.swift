@@ -58,11 +58,20 @@ class SocketIOService: ObservableObject {
                let text = dict["text"] as? String,
                let senderId = dict["senderId"] as? String {
                 
+                
+                print("Received message form: \(senderId): \(text)")
                 DispatchQueue.main.async {
+                    
+                    let newMessage = Message(text: text, senderId: senderId)
                     // Only append if not already in the messages
                     // This prevents double bubbles
-                    if senderId != self.currentUserId {
-                        self.messages.append(Message(text: text, senderId: senderId))
+//                    if senderId != self.currentUserId {
+//                        self.messages.append(Message(text: text, senderId: senderId))
+//                    }
+                    
+                    
+                    if !self.messages.contains(where: {$0.id == newMessage.id}){
+                        self.messages.append(newMessage)
                     }
                 }
             }
@@ -77,18 +86,23 @@ class SocketIOService: ObservableObject {
         socket.disconnect()
     }
     
-    func sendMessage(_ text: String) {
+    func sendMessage(_ text: String, to receiverId: String) {
         guard !text.isEmpty else { return }
         
         let msg = Message(text: text, senderId: currentUserId)
         
         // Append immediately to show locally
-        messages.append(msg)
+//        messages.append(msg)
+        
+        
+        //Send to server
+        print("Sending message to \(receiverId): \(text)")
         
         // Send to server
         let payload: [String: Any] = [
             "text": text,
-            "senderId": currentUserId
+            "senderId": currentUserId,
+            "to": receiverId
         ]
         socket.emit("chat message", payload)
     }

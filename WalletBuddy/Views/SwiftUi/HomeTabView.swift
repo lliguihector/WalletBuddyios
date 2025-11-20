@@ -306,6 +306,7 @@ struct HomeTabView: View {
                             ForEach(homeVM.users) { user in
                                 UserCardView(
                                     imageURL: user.profileImageUrl,
+                                    uid: user.uid,
                                     name: user.name,
                                     subtitle: user.title ?? "No title set",
                                     isOnline: true,
