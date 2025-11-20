@@ -26,14 +26,13 @@ struct ChatView: View {
                         
                         
                         
-                        ForEach(socketService.messages) { msg in
-
+                        ForEach(socketService.messages[userId] ?? []) { msg in
                             MessageBubble(
                                 text: msg.text,
                                 isMe: msg.senderId == Auth.auth().currentUser?.uid
                             )
-
                         }
+
                     }
                     .padding(.top, 10)
                 }
