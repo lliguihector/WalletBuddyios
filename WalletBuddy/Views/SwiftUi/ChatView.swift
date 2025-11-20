@@ -7,13 +7,16 @@
 import SwiftUI
 import FirebaseAuth
 struct ChatView: View {
-    let userId: String // User selected id
+    let userId: String // User selected id is uid
     let userName: String
     let imageURL: String?
     @Binding var isPresented: Bool
 
     @StateObject private var socketService = SocketIOService.shared
     @State private var currentMessage = ""
+    @State private var typingTimer: Timer?
+    
+    
     
     //Append with API One on on chat History
     @State private var historyMessages: [Message] = [
@@ -55,39 +58,61 @@ struct ChatView: View {
             VStack {
                 
                 // 📩 Messages list
-                
-                
+
                 ScrollViewReader { proxy in
                     ScrollView {
+ 
+                        
                         LazyVStack(spacing: 12) {
 
+                            // Messages
                             ForEach(historyMessages + socketService.newMessage) { msg in
                                 MessageBubble(
                                     text: msg.text,
                                     isMe: msg.senderId == Auth.auth().currentUser?.uid
                                 )
-                                .id(msg.id) // 👈 IMPORTANT
+                                .id(msg.id)
                             }
-
                         }
+
                         .padding(.top, 10)
                     }
-                    .onChange(of: historyMessages.count) { _ in
-                        scrollToBottom(proxy)
-                    }
-                    .onChange(of: socketService.newMessage.count) { _ in
-                        scrollToBottom(proxy)
-                    }
-                    .onAppear {
-                        scrollToBottom(proxy)
-                    }
+                    .onChange(of: historyMessages.count) { _ in scrollToBottom(proxy)}
+                    .onChange(of: socketService.newMessage.count) { _ in scrollToBottom(proxy)}
+                    .onAppear { scrollToBottom(proxy)}
                 }
 
-
+                // From typing Indicator goes HERE
+                if socketService.isTypingFromUser == userId {
+                    HStack {
+                        Text("Typing…")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.leading, 8)
+                        Spacer()
+                    }
+                    .background(Color.clear)
+                    .transition(.opacity)
+                    .animation(.easeInOut, value: socketService.isTypingFromUser)
+                    .padding(.bottom, 4)
+                }
+                
+                
+                
+                
 
                 // ✏️ Input bar
                 HStack {
                     TextField("Message...", text: $currentMessage)
+                        .onChange(of: currentMessage) { _ in   //Emiting typing indicator from to
+                            socketService.startTyping(to: userId)
+
+                            typingTimer?.invalidate()
+                            typingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                                socketService.stopTyping(to: userId)
+                            }
+                        }
+
                         .padding(12)
                         .background(Color(.systemGray6))
                         .cornerRadius(10)

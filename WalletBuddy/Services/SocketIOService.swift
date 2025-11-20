@@ -22,9 +22,9 @@ class SocketIOService: ObservableObject {
     private var manager: SocketManager!
     private var socket: SocketIOClient!
     
-    // Store messages per chat (key = other userId or groupId)
-//    @Published var messages: [String: [Message]] = [:]
-    @Published var newMessage: [Message] = []//Only for messages recieved wile chat is open
+ 
+    @Published var newMessage: [Message] = []//Only for messages recieved while chat is open
+    @Published var isTypingFromUser: String? = nil
     
     private init() {
         self.currentUserId = Auth.auth().currentUser?.uid ?? "unknown"
@@ -68,6 +68,36 @@ class SocketIOService: ObservableObject {
                 }
             }
         }
+        
+        //Typing indicator
+        socket.on("typing"){[weak self] data, _ in
+            guard let self = self else { return }
+        
+            if let dict = data.first as? [String: Any],
+               let from = dict["from"] as? String{
+                
+                
+                DispatchQueue.main.async{
+                    self.isTypingFromUser = from
+                }
+            }
+            
+        }
+        
+        socket.on("stop typing"){ [weak self] data, _ in
+            guard let self = self else {return}
+            
+            
+            DispatchQueue.main.async(){
+                
+                self.isTypingFromUser = nil
+            }
+            
+            
+            
+        }
+        
+        
     }
     
     // MARK: - Connection
@@ -115,6 +145,18 @@ class SocketIOService: ObservableObject {
         newMessage.removeAll()
     }
     
+    
+    
+    
+    func startTyping(to receiverId: String){
+        let payload = ["from": currentUserId, "to": receiverId]
+        socket.emit("typing",payload)
+    }
+    
+    func  stopTyping(to receiverId: String){
+        let payload = ["from": currentUserId, "to": receiverId]
+        socket.emit("stop typing",payload);
+    }
     
     
 }
