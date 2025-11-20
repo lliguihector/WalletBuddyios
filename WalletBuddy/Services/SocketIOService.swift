@@ -23,7 +23,8 @@ class SocketIOService: ObservableObject {
     private var socket: SocketIOClient!
     
     // Store messages per chat (key = other userId or groupId)
-    @Published var messages: [String: [Message]] = [:]
+//    @Published var messages: [String: [Message]] = [:]
+    @Published var newMessage: [Message] = []//Only for messages recieved wile chat is open
     
     private init() {
         self.currentUserId = Auth.auth().currentUser?.uid ?? "unknown"
@@ -56,20 +57,14 @@ class SocketIOService: ObservableObject {
                let senderId = dict["senderId"] as? String,
                let receiverId = dict["to"] as? String {
                 
-                print("📩 Received message from \(senderId): \(text)")
+             
                 
                 DispatchQueue.main.async {
-                    let chatKey = senderId == self.currentUserId ? receiverId : senderId
+
                     
-                    let newMessage = Message(
-                        text: text,
-                        senderId: senderId,
-                        delivered: true,
-                        read: senderId != self.currentUserId
-                    )
+                    self.newMessage.append(Message(text: text, senderId: senderId))
+                    print("📩 Received message from \(senderId): \(text)")
                     
-                    // Append to correct chat array
-                    self.messages[chatKey, default: []].append(newMessage)
                 }
             }
         }
@@ -88,37 +83,38 @@ class SocketIOService: ObservableObject {
     func sendMessage(_ text: String, to receiverId: String) {
         guard !text.isEmpty else { return }
         
+        // Create the message locally
         let msg = Message(text: text, senderId: currentUserId, delivered: false, read: false)
         
-        // Append to correct chat
-//        messages[receiverId, default: []].append(msg)
+        // Append locally
+//        newMessage.append(msg)
         
-        // Emit to server
+        // Payload to send to server
         let payload: [String: Any] = [
             "text": text,
             "senderId": currentUserId,
             "to": receiverId
         ]
         
+        // Emit with acknowledgment
         socket.emitWithAck("chat message", payload).timingOut(after: 5) { [weak self] _ in
             guard let self = self else { return }
             
-            // Mark delivered
-            if let index = self.messages[receiverId]?.firstIndex(where: { $0.id == msg.id }) {
-                self.messages[receiverId]?[index].delivered = true
+            // Mark delivered once server ACKs
+            if let index = self.newMessage.firstIndex(where: { $0.id == msg.id }) {
+                self.newMessage[index].delivered = true
+                print("✅ Message delivered to \(receiverId): \(text)")
             }
         }
         
         print("✉️ Sending message to \(receiverId): \(text)")
     }
-    
-    // MARK: - Read receipt
-    func markMessageAsRead(_ message: Message, chatKey: String) {
-        let payload: [String: Any] = ["messageId": message.id.uuidString]
-        socket.emit("message read", payload)
-        
-        if let index = messages[chatKey]?.firstIndex(where: { $0.id == message.id }) {
-            messages[chatKey]?[index].read = true
-        }
+
+    //Clear in-memory message when leaving chat
+    func clearMessage(){
+        newMessage.removeAll()
     }
+    
+    
+    
 }
