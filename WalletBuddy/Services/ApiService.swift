@@ -38,7 +38,7 @@ final class ApiService {
     private init() {}
     
     
-    
+    //CHECK NEED TO ADD BEACON DATA TO APPUSER FRONT AND BACKEND
     func verifyUser(withToken token: String) async -> AppUser? {
 
         
@@ -101,26 +101,28 @@ final class ApiService {
     
     
     //Sends the users current location to check in user
-    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, deviceID: String) async -> Result<CheckInResponse, APIError>{
+    func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, device: DeviceCheckInInfo) async -> Result<CheckInResponse, APIError>{
         
         guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
             return .failure(.invalidURL)
         }
         //http://localhost:3000/checkin/checkin
         //"https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin"
-        let body: [String: Any] = [
-            "lat": latitude,
-            "lng": longitude,
-            "deviceID": deviceID
-        ]
+
         
-           print("From Application location: \(latitude) \(longitude)")
+        let body = CheckInRequest(
+            lat: latitude,
+            lng: longitude,
+            device: device
+        )
         
+        let httpBody: Data
         
-        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else{
+        do{
+            httpBody = try JSONEncoder().encode(body)
+        }catch{
             return .failure(.serializationError)
         }
-        
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -195,13 +197,10 @@ final class ApiService {
             return .failure(.invalidURL)
         }
         
-        print("➡️ Fetching last check-in from URL: \(url)")
-        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
-        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
         
         do {
             // 2️⃣ Perform network request
@@ -239,11 +238,10 @@ final class ApiService {
             
             do {
                 let checkin = try decoder.decode(CheckIn.self, from: data)
-                print("✅ Decoded CheckIn: \(checkin)")
                 return .success(checkin)
             } catch {
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    print("❌ Decoding error. Raw JSON: \(jsonString)")
+                    print("❌ From fetchLastCheckin Decoding error. Raw JSON: \(jsonString)")
                 }
                 print("❌ Decoding error: \(error.localizedDescription)")
                 return .failure(.decodingError)

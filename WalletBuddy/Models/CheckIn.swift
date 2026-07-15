@@ -6,13 +6,35 @@
 //
 import Foundation
 
+
+enum CheckinStatus: String,Codable{
+case active
+case completed
+    
+}
+
+
 struct CheckInResponse: Codable{
     let success: Bool
     let message: String
 
 }
 
+//to store device information 
+struct DeviceCheckInInfo: Codable{
+    let id: String
+    let platform: String
+    let osVersion: String
+    let model: String
+    let appVersion: String?
+}
 
+//To request model for API
+struct CheckInRequest: Codable{
+    let lat: Double
+    let lng: Double
+    let device: DeviceCheckInInfo
+}
 
 struct CheckIn: Codable{
     let _id: String
@@ -20,15 +42,13 @@ struct CheckIn: Codable{
     let organization: String
     let location: Location
     let distanceFromOrg: Int
-    let checkedOut: Bool
+    let status: CheckinStatus
     let checkInTime: Date
     let checkedOutTime: Date?
     let method: String
-    let deviceID: String
+//    let device: DeviceCheckInInfo
 
     }
-
-import Foundation
 
 // MARK: - Single Checked-In User
 struct CheckedInUser: Codable, Identifiable {

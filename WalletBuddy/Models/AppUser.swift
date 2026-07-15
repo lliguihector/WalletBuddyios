@@ -21,6 +21,7 @@ struct AppUser: Codable, Identifiable{
     let title: String
     let organization: Organization?
     let devices: [Device]?
+    //let beacon: String - can be null 
     
     var fullName: String {"\(firstName) \(lastName)"}
     
@@ -57,8 +58,24 @@ struct Organization: Codable{
     let phone: String
     let website: String
     let logoUrl: String?
+    let beaconUuid: String?
     let address: Address
     let location: Location
+    
+    //Coding keys -- Used to map backend JSON keys to Swift property names when they differ
+    enum CodingKeys: String, CodingKey{
+        
+        case name
+        case type
+        case email
+        case phone
+        case website
+        case logoUrl
+        case beaconUuid
+        case address
+        case location
+    }
+    
 }
 
 

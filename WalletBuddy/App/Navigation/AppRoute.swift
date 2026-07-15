@@ -13,6 +13,7 @@ enum AppRoute: Hashable{
    
 
     case loginEmail
+    case createAdminAccount
     
     
     
@@ -23,6 +24,8 @@ enum AppRoute: Hashable{
         switch self{
         case .loginEmail:
             LogInVCWrapper()
+        case .createAdminAccount:
+            CreateAdminAccountView()
         
         }
     }

@@ -105,25 +105,27 @@ class MapViewModel: ObservableObject {
     
 
 
-    //MARK: - CHECK IN USER TO backen
+    //MARK: - CHECK IN 
 private func handleLocationUpdate(_ location: CLLocation) async{
         isLoading = true
     defer{isLoading = false}//Always hide loading on exit (success or failure)
-        do{
+    do{
+        
+        guard let idToken = try await firebaseService.getIDToken(forceRefresh: true) else {
+            print("❌ Failed to get Firebase token")
+            showFailureAlert = true
+            errorMessage = "Authentication failed. Please log in again."
+            return
+        }
+        
+        
+        //Get device information
+        let device = DeviceCheckInInfo(id: DeviceInfo.deviceId, platform: DeviceInfo.platform, osVersion: DeviceInfo.systemVersion, model: DeviceInfo.deviceModel, appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        )
             
-            guard let idToken = try await firebaseService.getIDToken(forceRefresh: true) else {
-                print("❌ Failed to get Firebase token")
-                showFailureAlert = true
-                errorMessage = "Authentication failed. Please log in again."
-                return
-            }
-//Get decie ID
-            let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Unknown Device ID"
             
             
-            
-            
-            let result = await apiService.sendLocationToDB(withToken: idToken,latitude: location.coordinate.latitude,longitude: location.coordinate.longitude, deviceID: deviceID)
+        let result = await apiService.sendLocationToDB(withToken: idToken,latitude: location.coordinate.latitude,longitude: location.coordinate.longitude,device: device)
 
             
         switch result {

@@ -21,13 +21,17 @@ struct ProfileView: View {
                         if let logoUrl = userViewModel.appUser?.profileImageUrl,
                            let url = URL(string: logoUrl) {
                             AsyncImage(url: url) { image in
-                                image.resizable()
+                                image
+                                    .resizable()
                                     .scaledToFill()
                                     .frame(width: 100, height: 100)
+                                    .background(Color.white)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.gray, lineWidth: 0.5))
-                                   
-                            } placeholder: {
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.gray, lineWidth: 0.5)
+                                    )
+                            }placeholder: {
                                 ProgressView()
                                     .frame(width: 100, height: 100)
                             }
@@ -73,8 +77,9 @@ struct ProfileView: View {
                     VStack(spacing: 12) {
                         
                         NavigationLink(destination: UIDView(uid: userViewModel.appUser?.uid ?? "No UID ")){
-                            infoRow(label: "UID", value: "View", icon: "number")
+                            infoRow(label: "", value: "Account ID", icon: "person.text.rectangle")
                         }
+                        
                       
                         
                         

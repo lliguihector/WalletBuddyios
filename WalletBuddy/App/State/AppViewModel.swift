@@ -150,16 +150,17 @@ class AppViewModel: ObservableObject {
                 try authService.logout()
                 await performLogoutCleanup()
                 
-                await MainActor.run{
-                    self.navigationPath = NavigationPath() //Reset path before state change
-                    NavigationRouter.shared.popToRoot()
-                    state = .loggedOut
-                }
-                
-             
-                
+                userViewModel.clearUser()
+            navigationPath = NavigationPath() //Reset path before state change
+           
                 
             
+            NavigationRouter.shared.popToRoot()
+                
+                
+            state = .loggedOut
+                
+
                 print("App State: logedOut")
             } catch {
                 print("Logout failed: \(error.localizedDescription)")
@@ -168,7 +169,7 @@ class AppViewModel: ObservableObject {
             SpinnerManager.shared.hide()
         }
     }
-    
+
     private func performLogoutCleanup() async {
         // 📝 Sync data to backend
         // 🗑️ Clear cached user data
@@ -176,6 +177,8 @@ class AppViewModel: ObservableObject {
         // 📊 Log analytics event like "UserLoggedOut"
 
         print("🔄 Performing logout cleanup...")
+        
+ 
 
         // Simulate time delay if needed
         try? await Task.sleep(nanoseconds: 500_000_000)

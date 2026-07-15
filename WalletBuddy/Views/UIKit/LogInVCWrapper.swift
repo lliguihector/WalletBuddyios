@@ -14,3 +14,4 @@ struct LogInVCWrapper: UIViewControllerRepresentable {
         // Nothing needed
     }
 }
+

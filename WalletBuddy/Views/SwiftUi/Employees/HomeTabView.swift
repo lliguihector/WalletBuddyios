@@ -34,7 +34,14 @@ struct HomeTabView: View {
             Color(UIColor.systemBackground)
                 .ignoresSafeArea()
             
+            
+            
+            
+            //MARK: -- SCROLL THE WHOLE SCREEN
             ScrollView {
+                
+                
+                //MARK: -- Good Evening, Name
                 VStack(spacing: 24) {
                     
                     // MARK: - Greeting Section
@@ -47,105 +54,145 @@ struct HomeTabView: View {
                     .padding(.horizontal)
                     .padding(.top)
                     
-                    
-                    
+                
                     
                     // MARK: - Last Check-In Card
                     if let lastCheckin = homeVM.lastCheckin {
                         VStack(alignment: .leading, spacing: 12) {
+                            
+                            
+                            //level 1
                             HStack {
-                                Image(systemName: "clock.fill")
-                                    .foregroundColor(.blue)
-                                Text("Recent Check-In")
+                                Text("Recent")
                                     .font(.headline)
+
                                 Spacer()
-                                
-                                VStack(alignment: .trailing, spacing: 2){
-                                    Label{
-                                        Text(status)
-                                            .font(.caption)
-                                            .bold()
-                                    }icon:{
-                                        Image(systemName: statusIcon)
-                                    }
+
+                                Label(status, systemImage: statusIcon)
+                                    .font(.caption.weight(.semibold))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(statusColor.opacity(0.15))
                                     .foregroundColor(statusColor)
                                     .clipShape(Capsule())
-                                    
-                                    Text(timeSinceEvent)
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 12) {
 
-                                // In Time
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("In")
+
+                                
+                                
+                                
+                                
+                                
+                                
+                            }
+                            //Level 2
+                            
+                            
+                            //MARK: -- IF STATUS IS ACTIVE
+                            if lastCheckin.status == .active {
+                                        
+                                VStack(alignment: .leading, spacing: 12) {
+                                    // In Time
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Clocked in at")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .bold()
+                                        Text(lastCheckin.checkInTime.formatted(.dateTime.hour().minute()))
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                    }
+                                }
+                                
+                                
+                                
+                                Divider()
+
+                                Button(action: {
+                                    print("Checked Out Button Pressed")
+
+                                    Task {
+                                        await homeVM.checkoutUser()
+
+                                        if homeVM.showSuccessAlert {
+
+                                            // Refresh the latest check-in
+                                            await homeVM.fetchLastCheckin()
+
+                                            if let lastCheckin = homeVM.lastCheckin {
+                                                updateStatus(from: lastCheckin)
+                                            }
+
+                                            toastMessage = homeVM.successMessage
+                                            toastIsError = false
+                                            showToastWithAutoDismiss()
+
+                                        } else if homeVM.showFailureAlert {
+
+                                            toastMessage = homeVM.errorMessage ?? "An error occurred."
+                                            toastIsError = true
+                                            showToastWithAutoDismiss()
+                                        }
+                                    }
+
+                                }) {
+
+                                    HStack {
+                                        Image(systemName: "clock.badge.xmark")
+                                        Text("Clock Out")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color(red: 0.05, green: 0.15, blue: 0.35))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(16)
+                                }
+                                
+                            }else if lastCheckin.status == .completed, let clockOutTime = lastCheckin.checkedOutTime{
+                                
+                                
+                                VStack(alignment: .leading, spacing: 12){
+                                    
+                                    VStack(alignment: .leading, spacing: 2){
+                                    Text("Last Shift")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                         .bold()
-                                    Text(lastCheckin.checkInTime.formatted(
-                                        .dateTime.weekday(.wide)
-                                        .month(.abbreviated)
-                                        .day()
-                                        .hour()
-                                        .minute()
-                                    ))
-                                    .foregroundColor(.primary)
-                                    .font(.subheadline)
+                                         
+                                         Text(
+                                            "\(lastCheckin.checkInTime.formatted(.dateTime.hour().minute())) " +
+                                            "- \(clockOutTime.formatted(.dateTime.hour().minute()))")
+                                         .font(.subheadline)
+                                         .foregroundColor(.primary)
+                                         
                                 }
+                                    
+                                    
+                                }
+                                Divider()
 
-                                // Out Time with Duration on the far right
-                                if lastCheckin.checkedOut, let outTime = lastCheckin.checkedOutTime {
-                                    HStack(alignment: .top) {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text("Out")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                                .bold()
-                                            Text(outTime.formatted(
-                                                .dateTime.weekday(.wide)
-                                                .month(.abbreviated)
-                                                .day()
-                                                .hour()
-                                                .minute()
-                                            ))
-                                            .foregroundColor(.primary)
-                                            .font(.subheadline)
-                                        }
-                                        Spacer()
-                                        // Duration
-                                        let duration = outTime.timeIntervalSince(lastCheckin.checkInTime)
-                                        Text(formatDuration(duration))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .padding(.top, 2) // aligns with the time text
+                                Button(action: {
+                                    showMapView = true
+                                }) {
+
+                                    HStack {
+                                        Image(systemName: "clock.badge.checkmark")
+                                        Text("Clock In")
+                                            .fontWeight(.semibold)
                                     }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color(red: 0.05, green: 0.15, blue: 0.35))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(16)
                                 }
-                            }
-
-                            
-                            
-                            
-                            
-                            
-                            
-                            Divider()
-                            
-                            HStack {
-                                Text("Where:")
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text("Room 101") // You can update dynamically later
-                                    .foregroundColor(.primary)
+                                
+                                
+                                
+                              
                             }
                             
                             
-                            //
                             
                             
                             
@@ -172,9 +219,7 @@ struct HomeTabView: View {
                             
                             
                             HStack {
-                                Image(systemName: "clock.fill")
-                                    .foregroundColor(.blue)
-                                Text("Recent Check-In")
+                                Text("Recent")
                                     .font(.headline)
                                 Spacer()
                                 
@@ -206,76 +251,83 @@ struct HomeTabView: View {
                     
                     
                     
-                    // MARK: - Start Check-In Button
+//                    // MARK: - Start Check-In Button
+//                    
+//                    
+//                    if let lastCheckin = homeVM.lastCheckin, lastCheckin.status == .active{
+//                        
+//                        Button(action: {
+//                            //MARK: - CHECKOUT
+//                            print("Checked Out Button Pressed")
+//                            Task{
+//                                await homeVM.checkoutUser()
+//                                
+//                                if homeVM.showSuccessAlert{
+//                                    
+//                                    //Refresh the latest check-in to refresh the UI
+//                                    await homeVM.fetchLastCheckin()
+//                                    
+//                                    if let lastCheckin = homeVM.lastCheckin{
+//                                        updateStatus(from: lastCheckin)
+//                                    }
+//                                    
+//                                    
+//                                    toastMessage = homeVM.successMessage
+//                                    toastIsError = false
+//                                    showToastWithAutoDismiss()
+//                                    
+//                                }else if homeVM.showFailureAlert{
+//                                    toastMessage = homeVM.errorMessage ?? "An error occurred."
+//                                    toastIsError = true
+//                                    showToastWithAutoDismiss()
+//                                }
+//                                
+//                            }
+//                            
+//                        }) {
+//                            
+//                            HStack{
+//                                Image(systemName: "clock.badge.xmark")
+//                                Text("Clock Out")
+//                                    .fontWeight(.semibold)
+//                            }
+//                            .frame(maxWidth: .infinity)
+//                            .padding()
+//                            .background(LinearGradient(
+//                                colors: [Color.black],
+//                                startPoint: .leading,
+//                                endPoint: .trailing
+//                            ))
+//
+//                            .foregroundColor(.white)
+//                            .cornerRadius(16)
+//                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+//                        }
+//                        .padding(.horizontal)
+//                    }else{
+//                        Button(action: { showMapView = true }) {
+//                            HStack {
+//                                Image(systemName: "clock.badge.checkmark")
+//                                Text("Clock In")
+//                                    .fontWeight(.semibold)
+//                            }
+//                            .frame(maxWidth: .infinity)
+//                            .padding()
+//                            .background(LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .leading, endPoint: .trailing))
+//                            .foregroundColor(.white)
+//                            .cornerRadius(16)
+//                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+//                        }
+//                        .padding(.horizontal)
+//                    }
                     
                     
-                    if let lastCheckin = homeVM.lastCheckin, lastCheckin.checkedOut == false{
-                        
-                        Button(action: {
-                            //MARK: - CHECKOUT
-                            print("Checked Out Button Pressed")
-                            Task{
-                                await homeVM.checkoutUser()
-                                
-                                if homeVM.showSuccessAlert{
-                                    
-                                    //Refresh the latest check-in to refresh the UI
-                                    await homeVM.fetchLastCheckin()
-                                    
-                                    if let lastCheckin = homeVM.lastCheckin{
-                                        updateStatus(from: lastCheckin)
-                                    }
-                                    
-                                    
-                                    toastMessage = homeVM.successMessage
-                                    toastIsError = false
-                                    showToastWithAutoDismiss()
-                                    
-                                }else if homeVM.showFailureAlert{
-                                    toastMessage = homeVM.errorMessage ?? "An error occurred."
-                                    toastIsError = true
-                                    showToastWithAutoDismiss()
-                                }
-                                
-                            }
-                            
-                        }) {
-                            
-                            HStack{
-                                Image(systemName: "clock.badge.xmark")
-                                Text("Check Out")
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(LinearGradient(colors: [Color.red, Color.pink], startPoint: .leading, endPoint: .trailing))
-                            .foregroundColor(.white)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
-                        }
-                        .padding(.horizontal)
-                    }else{
-                        Button(action: { showMapView = true }) {
-                            HStack {
-                                Image(systemName: "clock.badge.checkmark")
-                                Text("Start Check-In")
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .leading, endPoint: .trailing))
-                            .foregroundColor(.white)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
-                        }
-                        .padding(.horizontal)
-                    }
                     
                     //MARK: - "Currently Online" Title
                     HStack(alignment: .center){
                         Rectangle()
                             .fill(
-                                LinearGradient(colors: [.blue, .gray], startPoint: .leading, endPoint: .trailing)
+                                LinearGradient(colors: [.blue, .aj5Gray], startPoint: .leading, endPoint: .trailing)
                             
                     )
                     .frame(width: 5, height: 25)
@@ -401,15 +453,15 @@ struct HomeTabView: View {
         default: return "Good Night"
         }
     }
-    //Status Upate
+    //Status Upate bade "Active", "Completed "
     func updateStatus(from checkin: CheckIn){
 
 
-        if checkin.checkedOut{
+        if checkin.status == .active{
             
-            status = "Checked Out"
-            statusColor = .red
-            statusIcon = "xmark.circle.fill"
+            status = "Active"
+            statusColor = .green
+            statusIcon = "location.fill"
             
             if let outTime = checkin.checkedOutTime{
                 timeSinceEvent = timeAgo(from: outTime)
@@ -418,11 +470,11 @@ struct HomeTabView: View {
                 
             
         }else{
-            status = "Checked In"
-            statusColor = .green
+            status = "Completed"
+            statusColor = .gray
             statusIcon = "checkmark.circle.fill"
             
-        
+        //HELLO KITTY
             timeSinceEvent = timeAgo(from: checkin.checkInTime)
         }
         

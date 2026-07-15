@@ -192,8 +192,9 @@ class LoginVC: UIViewController {
     }
     
     @objc func backToLoginOptions() {
-        NavigationRouter.shared.popToRoot()
-        AppViewModel.shared.state = .loggedOut
+        
+            NavigationRouter.shared.popToRoot()
+            AppViewModel.shared.state = .loggedOut
     }
     
     @objc func loginWithFirebaseAuth() {

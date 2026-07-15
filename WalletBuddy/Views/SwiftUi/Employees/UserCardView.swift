@@ -73,15 +73,26 @@ import SwiftUI
                 // Conditional "YOU" or Message Button
                 if userId == currentUserId {
                     Text("YOU")
+//                        .font(.caption)
+//                        .fontWeight(.semibold)
+//                        .foregroundColor(.secondary)
+//                        .offset(x: -10, y: -10)
+
+                    
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
-                        .offset(x: -10, y: -10)
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(6)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.25))
+                        )
+                        .offset(x:-10,y:-10)
                 } else {
                     Button(action: {
                         showChat = true
                     }) {
-                        Image(systemName: "ellipsis.message.fill")
+                        Image(systemName: "ellipsis.bubble")
                             .font(.title3)
                             .foregroundColor(.primary)
                             .padding(10)
