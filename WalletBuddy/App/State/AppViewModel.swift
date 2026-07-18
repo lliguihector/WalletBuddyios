@@ -15,13 +15,13 @@ struct AppAlert: Identifiable{
 @MainActor
 class AppViewModel: ObservableObject {
 
-    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, deviceManager: DeviceManager.shared )
+    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, deviceManager: DeviceManager.shared, navigationRouter: NavigationRouter.shared )
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
     @Published var activeAlert: AppAlert? = nil
     @Published var isLoading: Bool = false
-    @Published var navigationPath = NavigationPath()
+
     
     let userSession = UserSession()
     //MARK: -- Dependencies
@@ -29,12 +29,14 @@ class AppViewModel: ObservableObject {
    private let authService: AuthenticationService
    private let apiService: ApiService
    private let deviceManager: DeviceManager
+    private let navigationRouter: NavigationRouter
 
-    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, deviceManager: DeviceManager){
+    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, deviceManager: DeviceManager, navigationRouter: NavigationRouter){
         self.authService = authService
         self.userRepository = userRepository
         self.apiService = apiService
         self.deviceManager = deviceManager
+        self.navigationRouter = navigationRouter
     }
     
     //SYNC With Backend Method
@@ -68,11 +70,7 @@ class AppViewModel: ObservableObject {
             }else{
                 print("❌ Failed to fetch user from backend")
                 activeAlert = AppAlert(message: "We couldn’t complete your sign-in. Please try again.")
-            
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    self.logout()
-                }
-
+    
                 logout()
             }
         }catch{
@@ -85,12 +83,20 @@ class AppViewModel: ObservableObject {
 //Call this on app launch to check for an existing user session
     func initializeSession()async{
 
-      
+      print("initializing Session started")
         
         isLoading = true
         try? await Task.sleep(nanoseconds: 300_000_000)
         isLoading = false
+        
+        
+        
+        print("Firebase logged in:", authService.isUserLoggedIn())
+        
         if authService.isUserLoggedIn(){
+            
+            
+            print("➡️ Existing user found")
             
             //Show skeleton immediately while we verify user
 //            state = .loadingSkeleton
@@ -102,6 +108,7 @@ class AppViewModel: ObservableObject {
 
            
         }else{
+            print("➡️ No user")
             state = .loggedOut
         }
         
@@ -115,12 +122,9 @@ class AppViewModel: ObservableObject {
     
     
 
-    func handleLoginSuccess(forecRefresh: Bool = false) async{
+    func handleLoginSuccess(forceRefresh: Bool = false) async{
 
-        
-               
-            
-                await syncAppUser(forceRefresh: forecRefresh)
+                await syncAppUser(forceRefresh: forceRefresh)
       
         
         //Small delay for smoother transition
@@ -129,8 +133,16 @@ class AppViewModel: ObservableObject {
                 case .enterName:
                     state = .onboarding
                 case .complete:
-                   
+                    
+                  
                     state = .loggedIn
+                    
+                    
+                    //Clears the Navigation stack Stack
+    
+                    navigationRouter.path = NavigationPath()
+                    
+                    
                     DeviceManager.shared.requestNotificationPermissionAndRegister()
                
                 default:
@@ -144,29 +156,29 @@ class AppViewModel: ObservableObject {
     func logout() {
         SpinnerManager.shared.show()
         Task{
-      
+            defer{
+                SpinnerManager.shared.hide()
+            }
             
             do {
                 try authService.logout()
                 await performLogoutCleanup()
                 
                 userSession.clear()
-            navigationPath = NavigationPath() //Reset path before state change
-           
+
                 
+                state = .loggedOut
+                
+               navigationRouter.path = NavigationPath()
             
-            NavigationRouter.shared.popToRoot()
-                
-                
-            state = .loggedOut
-                
+          
 
                 print("App State: logedOut")
             } catch {
                 print("Logout failed: \(error.localizedDescription)")
                 activeAlert = AppAlert(message: "Failed to log out. Please try again.")
             }
-            SpinnerManager.shared.hide()
+ 
         }
     }
 

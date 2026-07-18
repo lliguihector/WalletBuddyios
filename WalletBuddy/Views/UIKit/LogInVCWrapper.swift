@@ -4,13 +4,23 @@ import Foundation
 
 
 struct LogInVCWrapper: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UINavigationController {
-        let loginVC = LoginVC()
-        let nav = UINavigationController(rootViewController: loginVC)
-        return nav
+    
+    
+    @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var navigationRouter: NavigationRouter
+    
+    
+    func makeUIViewController(context: Context) -> LoginVC {
+        
+        LoginVC(
+            
+            appViewModel: appViewModel,
+            navigationRouter: navigationRouter
+        )
+  
     }
 
-    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
+    func updateUIViewController(_ uiViewController: LoginVC, context: Context) {
         // Nothing needed
     }
 }

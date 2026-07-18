@@ -5,6 +5,7 @@
 //  Created by Hector Lliguichuzca on 7/18/25.
 //
 import SwiftUI
+import UIKit
 
 struct RootView: View {
     
@@ -16,31 +17,35 @@ struct RootView: View {
     var body: some View {
         
         ZStack{
-            NavigationStack(path: $navigationRouter.path)
-            {
+            NavigationStack(path: $navigationRouter.path){
+                
                 Group{
                     
                     switch appViewModel.state {
+                        
                     case .loggedOut:
+                        
                         LoginOptionsView()
                     case .loadingSkeleton:
+                        
                         SkeletonView()
                     case .loggedIn:
-                        MainView()
-                    case.onboarding:
-                        OnboardingView()
-                    case .loggingIn:
-                        LogInVCWrapper()
                         
+                        MainView()
+                        
+                    case.onboarding:
+                        
+                        OnboardingView()
                         
                     }
-                }
-                //Router starts here START --> APEND, POP, Etc (View) ->(Views)
-                .navigationDestination(for: AppRoute.self){ route in
-                    route.view
+                    }
+                    //Router sdestination lives within NavigationStack
+                    .navigationDestination(for: AppRoute.self){ route in
+                      route.view
+                        
+                    }
                     
                 }
-            }
             //Show Loading spinner when isLoading is true
             if appViewModel.isLoading {
                 LoadingSpinnerView()

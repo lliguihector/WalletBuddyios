@@ -14,7 +14,12 @@ class NavigationRouter: ObservableObject {
     static let shared = NavigationRouter()
 
     /// SwiftUI expects `NavigationPath`, not `[AppRoute]`
-    @Published var path = NavigationPath()
+    @Published var path = NavigationPath(){
+        didSet{
+         print("PATH CHANGED")
+            print("stack count:", path.count)
+        }
+    }
 
     func push(_ route: AppRoute) {
         path.append(route)

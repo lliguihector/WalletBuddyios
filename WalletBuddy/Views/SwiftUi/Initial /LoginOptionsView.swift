@@ -79,14 +79,11 @@ struct LoginOptionsView: View {
                 
                 // MARK: - Sign In Buttons
                 VStack(spacing: 16) {
-                    
-                
+
                     
                     Button(action: {
-                       
-                        
-                        
-                        appViewModel.state = .loggingIn
+
+                        navigationRouter.push(.loginEmail)
                     }) {
                         HStack(spacing: 12) {
                             Image(systemName: "envelope")

@@ -10,7 +10,27 @@ import Foundation
 
 class LoginVC: UIViewController {
 
+    
+    private let appViewModel: AppViewModel
+    private let navigationRouter: NavigationRouter
+    
     private lazy var viewModel = LoginViewModel()
+    
+    
+    init(
+        appViewModel: AppViewModel,
+        navigationRouter: NavigationRouter
+    ){
+        self.appViewModel = appViewModel
+        self.navigationRouter = navigationRouter
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init(coder: NSCoder){
+        fatalError("init(coder: has not been implemented")
+    }
+    
+    
+    
     
     let loginLabel = UILabel()
     
@@ -60,16 +80,9 @@ class LoginVC: UIViewController {
         usernameTextField.text = "lliguichuzcah@gmail.com"
         passwordTextField.text = "poli09"
         
-        // Back button
-        let backButton = UIBarButtonItem(
-            image: UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysTemplate),
-            style: .plain,
-            target: self,
-            action: #selector(backToLoginOptions)
-        )
-        backButton.title = "Back"
-        backButton.tintColor = UIColor.label
-        navigationItem.leftBarButtonItem = backButton
+
+        
+        
     }
     
     // MARK: - UI Configurations
@@ -191,11 +204,8 @@ class LoginVC: UIViewController {
         print("Forgot password tapped")
     }
     
-    @objc func backToLoginOptions() {
-        
-            NavigationRouter.shared.popToRoot()
-            AppViewModel.shared.state = .loggedOut
-    }
+
+    
     
     @objc func loginWithFirebaseAuth() {
         errorLabel.isHidden = true
@@ -207,8 +217,7 @@ class LoginVC: UIViewController {
             
             switch result {
             case .success:
-//                AppViewModel.shared.state = .loadingSkeleton
-                await AppViewModel.shared.handleLoginSuccess(forecRefresh: true)
+                await appViewModel.handleLoginSuccess(forceRefresh: true)
             case .failure(let message):
                 errorLabel.text = message
                 errorLabel.isHidden = false

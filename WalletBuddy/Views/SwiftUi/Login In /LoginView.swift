@@ -9,15 +9,11 @@ import SwiftUI
 
 
 struct LoginView: View {
-    
-    
-    
+
     @State private var firstName: String = ""
     
     
     var body: some View {
-        
-        
         
         VStack(spacing: 20){
             
