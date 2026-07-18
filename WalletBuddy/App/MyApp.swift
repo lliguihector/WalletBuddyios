@@ -21,7 +21,7 @@ struct MyApp: App {
     @StateObject private var appViewModel = AppViewModel.shared
     @StateObject private var navigationRouter = NavigationRouter.shared
     @StateObject private var networkMonitor = NetworkMonitor.shared
-    @StateObject private var userViewModel = UserViewModel.shared
+   
 
 //MARK: -- Init Firebase
   
@@ -33,7 +33,7 @@ struct MyApp: App {
                         .environmentObject(appViewModel)
                         .environmentObject(navigationRouter)
                         .environmentObject(networkMonitor)
-                        .environmentObject(userViewModel)
+                    
                         .task{
 //                            Initializing Firebase (if needed)
 //                            Checking whether a user is signed in

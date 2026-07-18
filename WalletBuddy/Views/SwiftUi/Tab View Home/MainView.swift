@@ -10,7 +10,6 @@ import SwiftUI
 struct MainView: View {
     
     //Global Access
-    @EnvironmentObject var userViewModel: UserViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var navigationRouter: NavigationRouter
     @EnvironmentObject var networkMonitor: NetworkMonitor
@@ -25,7 +24,7 @@ struct MainView: View {
             
             WelcomeView()
                 .tabItem{
-                    Label("Messages", systemImage: "messaget.fill")
+                    Label("Messages", systemImage: "message.fill")
                 }
             
             

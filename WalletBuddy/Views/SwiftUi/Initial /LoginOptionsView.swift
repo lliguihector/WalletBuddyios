@@ -83,7 +83,10 @@ struct LoginOptionsView: View {
                 
                     
                     Button(action: {
-                        AppViewModel.shared.state = .loggingIn
+                       
+                        
+                        
+                        appViewModel.state = .loggingIn
                     }) {
                         HStack(spacing: 12) {
                             Image(systemName: "envelope")
@@ -134,7 +137,6 @@ Text("Create Organization")
                                    .fontWeight(.semibold)
                                    .foregroundColor(.white)
                                    .frame(maxWidth: .infinity, minHeight: 50)
-                                   .background(Color.black)
                                    .cornerRadius(12)
                                    .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
 

@@ -15,7 +15,7 @@ struct AppAlert: Identifiable{
 @MainActor
 class AppViewModel: ObservableObject {
 
-    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, userViewModel: .shared, deviceManager: DeviceManager.shared )
+    static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, deviceManager: DeviceManager.shared )
     
     //@Publish automaticly emits a change notification
     @Published var state: AppState = .loggedOut
@@ -23,19 +23,17 @@ class AppViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var navigationPath = NavigationPath()
     
-    
+    let userSession = UserSession()
     //MARK: -- Dependencies
    private let userRepository: UserRepository
    private let authService: AuthenticationService
    private let apiService: ApiService
-  private let userViewModel: UserViewModel
-    private let deviceManager: DeviceManager
+   private let deviceManager: DeviceManager
 
-    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, userViewModel: UserViewModel, deviceManager: DeviceManager){
+    init(authService: AuthenticationService , apiService: ApiService,userRepository: UserRepository, deviceManager: DeviceManager){
         self.authService = authService
         self.userRepository = userRepository
         self.apiService = apiService
-        self.userViewModel = userViewModel
         self.deviceManager = deviceManager
     }
     
@@ -62,8 +60,10 @@ class AppViewModel: ObservableObject {
             
             if let user = await apiService.verifyUser(withToken: idToken){
 
-//                userViewModel.appUser = user // <--- sets AppUser Globally
-                userViewModel.updateUser(user)
+                
+                
+                userSession.setUser(user)
+     
                 print("✅ Synced latest AppUser from backend")
             }else{
                 print("❌ Failed to fetch user from backend")
@@ -125,7 +125,7 @@ class AppViewModel: ObservableObject {
         
         //Small delay for smoother transition
           
-                switch userViewModel.appUser?.onboardingStep {
+                switch userSession.user?.onboardingStep {
                 case .enterName:
                     state = .onboarding
                 case .complete:
@@ -150,7 +150,7 @@ class AppViewModel: ObservableObject {
                 try authService.logout()
                 await performLogoutCleanup()
                 
-                userViewModel.clearUser()
+                userSession.clear()
             navigationPath = NavigationPath() //Reset path before state change
            
                 

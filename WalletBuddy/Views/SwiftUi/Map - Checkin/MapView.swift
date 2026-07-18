@@ -9,14 +9,24 @@ import MapKit
 import CoreLocation
 
 struct MapView: View {
-    @EnvironmentObject var userViewModel: UserViewModel
+    
+    private let userSession: UserSession
+    
     @Environment(\.dismiss) private var dismiss
+    
+    
     @StateObject var mapViewModel: MapViewModel
+    
+    
     var onCheckinSuccess: (() -> Void)?
 
     // Init with MapViewModel
-    init(userViewModel: UserViewModel, onCheckinSuccess: (() -> Void)? = nil) {
-        _mapViewModel = StateObject(wrappedValue: MapViewModel(userViewModel: userViewModel))
+    init(
+        userSession: UserSession, onCheckinSuccess: (() -> Void)? = nil
+    ) {
+        
+        self.userSession = userSession
+        _mapViewModel = StateObject(wrappedValue: MapViewModel(userSession: userSession))
         self.onCheckinSuccess = onCheckinSuccess
     }
 
@@ -37,7 +47,7 @@ struct MapView: View {
             // MARK: - Map
             Map(initialPosition: mapViewModel.organizationCamera ?? defaultCamera) {
                 if let orgCoord = mapViewModel.organizationCoordinate {
-                    Annotation(userViewModel.appUser?.organization?.name ?? "Organization",
+                    Annotation(userSession.user?.organization?.name ?? "Organization",
                                coordinate: orgCoord,
                                anchor: .center) {
                         Image(systemName: "house.fill")

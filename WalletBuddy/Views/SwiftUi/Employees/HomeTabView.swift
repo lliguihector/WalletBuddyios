@@ -10,7 +10,6 @@ import MapKit
 import Foundation
 
 struct HomeTabView: View {
-    @EnvironmentObject var userViewModel: UserViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var networkMonitor: NetworkMonitor
     
@@ -46,7 +45,7 @@ struct HomeTabView: View {
                     
                     // MARK: - Greeting Section
                     HStack {
-                        Text("\(greatingMessage()), \(userViewModel.appUser?.firstName ?? "User")")
+                        Text("\(greatingMessage()), \(appViewModel.userSession.user?.firstName ?? "User")")
                             .font(.title)
                             .bold()
                         Spacer()
@@ -354,7 +353,7 @@ struct HomeTabView: View {
                                     subtitle: user.title ?? "No title set",
                                     isOnline: true,
                                     userId: user.id,// The ID from your API
-                                    currentUserId: userViewModel.appUser?.id, // Your logged-in user
+                                    currentUserId: appViewModel.userSession.user?.id, // Your logged-in user
                                     onMessageTap: {
                                         print("Message tapped for \(user.name)")
                                     }
@@ -369,7 +368,7 @@ struct HomeTabView: View {
                 .padding(.vertical)
             }
             .fullScreenCover(isPresented: $showMapView) {
-                MapView(userViewModel: userViewModel) {
+                MapView(userSession: appViewModel.userSession) {
                     Task {
                         await homeVM.fetchLastCheckin()
                         if let lastCheckin = homeVM.lastCheckin {
@@ -377,7 +376,7 @@ struct HomeTabView: View {
                         }
                     }
                 }
-                .environmentObject(userViewModel)
+               
             }
 
             .task {

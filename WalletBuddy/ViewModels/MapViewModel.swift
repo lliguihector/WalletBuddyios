@@ -9,12 +9,11 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-
+@MainActor
 class MapViewModel: ObservableObject {
     
-    //MARK: -- Enviornment Objects
-    @EnvironmentObject var userViewModel: UserViewModel
-    
+
+    private let userSession: UserSession
     
     //MARK: - Published Properties
     @Published var showSuccessAlert = false
@@ -45,20 +44,12 @@ class MapViewModel: ObservableObject {
 
 
     //MARK: - Init
-    init(userViewModel: UserViewModel) {
+    init(userSession:UserSession ) {
+        self.userSession = userSession
         
-        //Observ userViewModel for organization location
-//        if let orgLocation = userViewModel.appUser?.organization?.location.coordinates,
-//        orgLocation.count == 2{
-//            organizationCoordinate = CLLocationCoordinate2D(latitude: orgLocation[0], longitude: orgLocation[1])
-//        }else{
-//            //Fallback to default location (can be city center or 0,0)
-//            organizationCoordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
-//            print("Organization location not found, using default coordinates")
-//        }
-          
         
-        if let coords = userViewModel.appUser?.organization?.location.coordinates,
+        
+        if let coords = userSession.user?.organization?.location.coordinates,
            coords.count == 2 {
             let orgCoord = CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
             organizationCoordinate = orgCoord

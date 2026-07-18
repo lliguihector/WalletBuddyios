@@ -9,25 +9,31 @@ import SwiftUI
 import UIKit   // Needed for UIImage
 
 @MainActor
-class UserViewModel: ObservableObject {
-    @Published var appUser: AppUser?
+class UserSession: ObservableObject {
+    @Published private(set) var user: AppUser?
     @Published var profileImage: UIImage?   // Cached image
     
-    static let shared = UserViewModel()
-    private init(){}
     
-    func updateUser(_ user: AppUser) {
-        appUser = user
+    
+    
+    
+    init(){}
+    
+    //Stores currently logged in user information inside UserSession and loads their profile image
+    func setUser(_ user: AppUser) {
+        self.user = user
         Task { await loadProfileImage() }
     }
     
-    func clearUser() {
-        appUser = nil
+    
+//Removes stored user information and carched profile image from memory
+    func clear() {
+        self.user = nil
         profileImage = nil
     }
     
     private func loadProfileImage() async {
-        guard let urlString = appUser?.profileImageUrl,
+        guard let urlString = self.user?.profileImageUrl,
               let url = URL(string: urlString) else {
             profileImage = nil
             return

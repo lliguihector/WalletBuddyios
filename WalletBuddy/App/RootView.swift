@@ -35,6 +35,7 @@ struct RootView: View {
                         
                     }
                 }
+                //Router starts here START --> APEND, POP, Etc (View) ->(Views)
                 .navigationDestination(for: AppRoute.self){ route in
                     route.view
                     

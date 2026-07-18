@@ -7,10 +7,13 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var userViewModel: UserViewModel
+
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var networkMonitor: NetworkMonitor
 
+    
+
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -18,7 +21,7 @@ struct ProfileView: View {
                     
                     // MARK: - Profile Header
                     VStack(spacing: 8) {
-                        if let logoUrl = userViewModel.appUser?.profileImageUrl,
+                        if let logoUrl = appViewModel.userSession.user?.profileImageUrl,
                            let url = URL(string: logoUrl) {
                             AsyncImage(url: url) { image in
                                 image
@@ -54,15 +57,15 @@ struct ProfileView: View {
 
                         }
                         
-                        Text("\(userViewModel.appUser?.firstName ?? "") \(userViewModel.appUser?.lastName ?? "")")
+                        Text("\(appViewModel.userSession.user?.firstName ?? "") \(appViewModel.userSession.user?.lastName ?? "")")
                             .font(.title2)
                             .bold()
                         
-                        Text(userViewModel.appUser?.title ?? "No title")
+                        Text(appViewModel.userSession.user?.title ?? "No title")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        Text(userViewModel.appUser?.email ?? "email@example.com")
+                        Text(appViewModel.userSession.user?.email ?? "email@example.com")
                             .font(.footnote)
                             .foregroundColor(.gray)
                     }
@@ -76,7 +79,7 @@ struct ProfileView: View {
                     // MARK: - Information Section
                     VStack(spacing: 12) {
                         
-                        NavigationLink(destination: UIDView(uid: userViewModel.appUser?.uid ?? "No UID ")){
+                        NavigationLink(destination: UIDView(uid: appViewModel.userSession.user?.uid ?? "No UID ")){
                             infoRow(label: "", value: "Account ID", icon: "person.text.rectangle")
                         }
                         
@@ -84,17 +87,18 @@ struct ProfileView: View {
                         
                         
                         
-                        infoRow(label: "Organization", value: userViewModel.appUser?.organization?.name ?? "N/A", icon: "building.2")
-                        infoRow(label: "Email Verified", value: userViewModel.appUser?.emailVerified ?? false ? "Yes" : "No", icon: "checkmark.seal")
-                        infoRow(label: "Sign-In Providers", value: userViewModel.appUser?.providerIds?.joined(separator: ", ") ?? "None", icon: "key")
-                        infoRow(label: "Internet", value: networkMonitor.isConnected ? "Online" : "Offline", icon: "wifi")
+                        infoRow(label: "Organization", value: appViewModel.userSession.user?.organization?.name ?? "N/A", icon: "building.2")
+                        infoRow(label: "Email Verified", value: appViewModel.userSession.user?.emailVerified ?? false ? "Yes" : "No", icon: "checkmark.seal")
+                        
+                        
+                        
                     }
                     .padding(.horizontal)
                     
                     // MARK: - Contact Section
                     VStack(spacing: 12) {
                         infoRow(label: "Phone", value: "7185369221", icon: "phone.fill")
-                        infoRow(label: "Email", value: userViewModel.appUser?.email ?? "email@example.com", icon: "envelope.fill")
+                        infoRow(label: "Email", value: appViewModel.userSession.user?.email ?? "email@example.com", icon: "envelope.fill")
                     }
                     .padding(.horizontal)
                     
