@@ -35,7 +35,11 @@ struct MyApp: App {
                         .environmentObject(networkMonitor)
                         .environmentObject(userViewModel)
                         .task{
-                    
+//                            Initializing Firebase (if needed)
+//                            Checking whether a user is signed in
+//                            Refreshing the Firebase ID token
+//                            Loading the user from your API
+//                            Deciding whether to show onboarding, login, or the main app
                             await appViewModel.initializeSession()
                         }
 

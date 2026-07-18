@@ -8,7 +8,7 @@ import SwiftUI
 
 struct WelcomeView: View {
     var body: some View {
-        Text("No Notifications")
+        Text("No Messages ")
             .font(.largeTitle)
             .fontWeight(.bold)
             .padding()

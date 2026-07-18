@@ -25,7 +25,7 @@ struct MainView: View {
             
             WelcomeView()
                 .tabItem{
-                    Label("Board", systemImage: "bubble.left.fill")
+                    Label("Messages", systemImage: "messaget.fill")
                 }
             
             

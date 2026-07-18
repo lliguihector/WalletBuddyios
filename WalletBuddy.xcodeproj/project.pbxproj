@@ -264,7 +264,7 @@
 				DEVELOPMENT_TEAM = FLMQ8FUJ4T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WalletBuddy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = antWorks;
+				INFOPLIST_KEY_CFBundleDisplayName = Determit;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -294,7 +294,7 @@
 				DEVELOPMENT_TEAM = FLMQ8FUJ4T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WalletBuddy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = antWorks;
+				INFOPLIST_KEY_CFBundleDisplayName = Determit;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

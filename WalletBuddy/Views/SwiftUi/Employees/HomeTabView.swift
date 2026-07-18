@@ -31,7 +31,7 @@ struct HomeTabView: View {
     @State private var toastIsError = false
     var body: some View {
         ZStack {
-            Color(UIColor.systemBackground)
+            Color(UIColor.systemGroupedBackground)
                 .ignoresSafeArea()
             
             
@@ -42,7 +42,7 @@ struct HomeTabView: View {
                 
                 
                 //MARK: -- Good Evening, Name
-                VStack(spacing: 24) {
+                VStack(spacing: 12) {
                     
                     // MARK: - Greeting Section
                     HStack {
@@ -76,12 +76,6 @@ struct HomeTabView: View {
                                     .foregroundColor(statusColor)
                                     .clipShape(Capsule())
 
-
-                                
-                                
-                                
-                                
-                                
                                 
                             }
                             //Level 2
@@ -152,7 +146,7 @@ struct HomeTabView: View {
                                 
                                 
                                 VStack(alignment: .leading, spacing: 12){
-                                    
+                                
                                     VStack(alignment: .leading, spacing: 2){
                                     Text("Last Shift")
                                         .font(.caption)
@@ -186,20 +180,12 @@ struct HomeTabView: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(16)
                                 }
-                                
-                                
-                                
-                              
+     
                             }
-                            
-                            
-                            
-                            
-                            
-                            
+
                         }
                         .padding()
-                        .background(.ultraThinMaterial)
+                        .background(Color(.systemBackground))
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
                         .padding(.horizontal)
@@ -242,7 +228,7 @@ struct HomeTabView: View {
                             
                             
                         } .padding()
-                            .background(.ultraThinMaterial)
+                            .background(Color(.systemBackground))
                             .cornerRadius(16)
                             .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
                             .padding(.horizontal)
@@ -324,19 +310,24 @@ struct HomeTabView: View {
                     
                     
                     //MARK: - "Currently Online" Title
-                    HStack(alignment: .center){
-                        Rectangle()
-                            .fill(
-                                LinearGradient(colors: [.blue, .aj5Gray], startPoint: .leading, endPoint: .trailing)
+                    HStack(){
+                        
+                        
+                     Image(systemName: "person.3.fill")
+                        .font(.title3)
+                        .foregroundStyle(Color(red: 0.05, green: 0.15, blue: 0.35))
                             
-                    )
-                    .frame(width: 5, height: 25)
-                    .cornerRadius(2)
+                    
+                 
                     Text("Currently On Site")
-                        .font(.title3.bold())
+                        .font(.title2.bold())
                         .foregroundColor(.primary)
                     
                     Spacer()
+                        Text("\(homeVM.users.count)")
+                            .font(.title2.bold())
+                            .foregroundColor(Color(red: 0.05, green: 0.15, blue: 0.35))
+            
                 }
                 .padding(.horizontal)
                 .padding(.top,4)
@@ -370,13 +361,9 @@ struct HomeTabView: View {
                                 )
                                 .padding(.horizontal)
                             }
-
                         }
-                        
-                        
-                        
                     }
-                    .padding(.vertical)
+                    .padding(.top, 4)
                     Spacer()
                 }
                 .padding(.vertical)

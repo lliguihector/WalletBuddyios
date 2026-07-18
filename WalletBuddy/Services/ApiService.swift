@@ -34,21 +34,17 @@ enum CheckoutError: Error {
 final class ApiService {
     
     static let shared = ApiService()
-    
     private init() {}
-    
-    
-    //CHECK NEED TO ADD BEACON DATA TO APPUSER FRONT AND BACKEND
-    func verifyUser(withToken token: String) async -> AppUser? {
 
-        
+    //MARK: LOGIN/LOGOUT/STATE
+    
+    func verifyUser(withToken token: String) async -> AppUser? {
         //New parameters neeeded DeviceID
-        
         
         
         print("Firebase Token: -> \(token)")
         
-        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/user/check-or-create") else {
+        guard let url = URL(string:Constants.checkInOrCreateEndPoint) else {
             print("❌ Invalid URL")
             return nil
         }
@@ -99,17 +95,15 @@ final class ApiService {
         return nil
     }
     
-    
-    //Sends the users current location to check in user
+    //MARK: -- ADMIN
+    //MARK: -- EMPLOYEE
+    //CHECKIN
     func sendLocationToDB(withToken token: String, latitude: Double, longitude: Double, device: DeviceCheckInInfo) async -> Result<CheckInResponse, APIError>{
         
-        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin")else{
+        guard let url = URL(string:Constants.checkInEndPoint)else{
             return .failure(.invalidURL)
         }
-        //http://localhost:3000/checkin/checkin
-        //"https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkin"
 
-        
         let body = CheckInRequest(
             lat: latitude,
             lng: longitude,
@@ -166,33 +160,48 @@ final class ApiService {
         }
   
     }
-    
-    
-    //MARK: -- Register Device with backend
-   
-    func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
-        
-        print("Data sent to API...")
+    //CHECKOUT
+    func checkout(firebaseIDToken: String) async -> Result<String, APIError> {
+        guard let url = URL(string: Constants.checkOutEndPoint) else {
+            return .failure(.invalidURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(firebaseIDToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
+            }
+
+            // Try to parse server message from response
+            var message: String? = nil
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                message = json["message"] as? String
+            }
+
+            switch httpResponse.statusCode {
+            case 200:
+                return .success(message ?? "Successfully checked out")
+            case 400, 404:
+                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+            default:
+                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+            }
+
+        } catch {
+            return .failure(.networkError(error))
+        }
     }
-    
-    
-    
-  //Onboarding function
-    //Veryfy user with token
-    //Send onboarding step data
-    //FirstName and LastName
-    //updateOnboarding step to Complete
-    
-    
-    //Wherever called on Success call apppViewModel logginSuccess() to SYNC model and UI
-    
-    
-    
-    //MARK: - Fetch last checkin
+    //GET EMPLOYEE RECENT CHECKIN
     func fetchLastCheckin(token: String) async -> Result<CheckIn, APIError> {
         
         // 1️⃣ URL
-        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/lastCheckin") else {
+        guard let url = URL(string:Constants.getRecentCheckInEndPoint) else {
             print("❌ Invalid URL")
             return .failure(.invalidURL)
         }
@@ -252,94 +261,11 @@ final class ApiService {
             return .failure(.networkError(error))
         }
     }
-    
-    
-    
-    //CHECKOUT
-    func checkout(firebaseIDToken: String) async -> Result<String, APIError> {
-        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkout") else {
-            return .failure(.invalidURL)
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "PATCH"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("Bearer \(firebaseIDToken)", forHTTPHeaderField: "Authorization")
-
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
-            }
-
-            // Try to parse server message from response
-            var message: String? = nil
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                message = json["message"] as? String
-            }
-
-            switch httpResponse.statusCode {
-            case 200:
-                return .success(message ?? "Successfully checked out")
-            case 400, 404:
-                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
-            default:
-                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
-            }
-
-        } catch {
-            return .failure(.networkError(error))
-        }
-    }
-    
-    //MARK: - Fetch Messages
-        
-//    func fetchMessasges(user1: String, user2:String)async -> Result<[Message], APIError>{
-//            
-//         //URL
-//        guard let url = URL("")else{
-//            print("Invalid URL")
-//            return .failure(.invalidURL)
-//        }
-//        
-//        do{
-//            //Create URLRequest if needed
-//            var request = URLRequest(url:url)
-//            request.httpMethod = "GET"
-//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//            
-//            
-//            //Perform network call
-//            let (data, response) = try await URLSession.shared.data(for: request)
-//            
-//            
-//            //Check HTTP response
-//            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200{
-//                print("Server returned status code:", httpResponse.statusCode)
-//                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
-//            }
-//            
-//            
-//            //Decoding JSON
-//            let message = try JSONDecoder().decode([Message].self, from: data)
-//            return .success(message)
-//            
-//            
-//        }catch{
-//            print("Error fetching messafes:", error)
-//            return .failure(.decodingError)
-//        }
-//        
-//            
-//            
-//        }
-//    
-    //MARK: - GET CURRENT USERS CHECKED IN BELONGING WITHIN USER ORGANIZATION
+    //GET ALL Employees ON SITE
     func fetchCheckedInUsers(token: String) async -> Result<[CheckedInUser], APIError> {
         
         // 1️⃣ URL
-        guard let url = URL(string: "https://determitapi-709b9bad1b56.herokuapp.com/checkin/checkedin") else {
+        guard let url = URL(string: Constants.getAllEmployeesOnSiteEndPoint) else {
             print("❌ Invalid URL")
             return .failure(.invalidURL)
         }
@@ -397,8 +323,69 @@ final class ApiService {
         }
     }
 
- 
+//MARK: OTHER
+    //Register Device with backend
+    func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
+        print("Data sent to API...")
+    }
 
+  //Onboarding function
+    //Veryfy user with token
+    //Send onboarding step data
+    //FirstName and LastName
+    //updateOnboarding step to Complete
+    
+    
+    //Wherever called on Success call apppViewModel logginSuccess() to SYNC model and UI
+    
+    
+    
+  
+    
+    
+    //MARK: - Fetch Messages
+        
+//    func fetchMessasges(user1: String, user2:String)async -> Result<[Message], APIError>{
+//            
+//         //URL
+//        guard let url = URL("")else{
+//            print("Invalid URL")
+//            return .failure(.invalidURL)
+//        }
+//        
+//        do{
+//            //Create URLRequest if needed
+//            var request = URLRequest(url:url)
+//            request.httpMethod = "GET"
+//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//            
+//            
+//            //Perform network call
+//            let (data, response) = try await URLSession.shared.data(for: request)
+//            
+//            
+//            //Check HTTP response
+//            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200{
+//                print("Server returned status code:", httpResponse.statusCode)
+//                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
+//            }
+//            
+//            
+//            //Decoding JSON
+//            let message = try JSONDecoder().decode([Message].self, from: data)
+//            return .success(message)
+//            
+//            
+//        }catch{
+//            print("Error fetching messafes:", error)
+//            return .failure(.decodingError)
+//        }
+//        
+//            
+//            
+//        }
+//
+    
 
 
 

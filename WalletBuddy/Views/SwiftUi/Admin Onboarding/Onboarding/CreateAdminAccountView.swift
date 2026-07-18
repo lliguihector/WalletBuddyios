@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct CreateAdminAccountView: View {
-
+    
+    
+    @EnvironmentObject var navigationRouter: NavigationRouter
+    
+    
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
@@ -86,6 +90,7 @@ struct CreateAdminAccountView: View {
                     // Validate
                     // Call API
                     // Navigate to Verify Email
+                    navigationRouter.push(.verifyEmail)
 
                 } label: {
 
