@@ -14,11 +14,10 @@ struct VerifyEmail: View {
         
         VStack(spacing: 28) {
             
-            
-            VStack(alignment: .leading, spacing: 12) {
-
-                StepProgressView(currentStep: 2)
-            }
+            // MARK: Progress Bar
+            ProgressView(value: Double(1), total: Double(6))
+                .progressViewStyle(.linear)
+                .tint(.blue)
             
             
             Spacer()

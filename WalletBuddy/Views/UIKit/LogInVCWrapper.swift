@@ -8,6 +8,7 @@ struct LogInVCWrapper: UIViewControllerRepresentable {
     
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var navigationRouter: NavigationRouter
+    @Environment(\.dismiss) var dismiss
     
     
     func makeUIViewController(context: Context) -> LoginVC {
@@ -15,7 +16,8 @@ struct LogInVCWrapper: UIViewControllerRepresentable {
         LoginVC(
             
             appViewModel: appViewModel,
-            navigationRouter: navigationRouter
+            navigationRouter: navigationRouter,
+            dismiss: dismiss
         )
   
     }

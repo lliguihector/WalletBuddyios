@@ -32,7 +32,7 @@ struct OnboardingView: View {
                 TextField("Enter First Name", text: $firstName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
-
+//Use Button{ navigationRouter.push(.onboardingStep2)}
                 NavigationLink(destination: OnboardingView2()){
                     Text("Next")
                         .bold()

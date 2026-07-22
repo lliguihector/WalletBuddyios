@@ -12,5 +12,6 @@ enum AppState {
     case loadingSkeleton
     case loggedIn
     case onboarding
+    case onboardingAdmin
 }
 

@@ -13,6 +13,11 @@ import Foundation
 class NavigationRouter: ObservableObject {
     static let shared = NavigationRouter()
 
+    
+    init(){
+        print("NavigationRouter CREATED:",ObjectIdentifier(self))
+    }
+    
     /// SwiftUI expects `NavigationPath`, not `[AppRoute]`
     @Published var path = NavigationPath(){
         didSet{

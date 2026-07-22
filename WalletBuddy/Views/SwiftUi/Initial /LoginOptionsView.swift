@@ -81,10 +81,15 @@ struct LoginOptionsView: View {
                 VStack(spacing: 16) {
 
                     
-                    Button(action: {
-
-                        navigationRouter.push(.loginEmail)
-                    }) {
+//                    Button(action: {
+//                        print("LOGIN BUTTON TAPPED")
+//                        print("PATH BEFORE", navigationRouter.path.count)
+//                        navigationRouter.push(.loginEmail)
+//                        print("PATH AFTER", navigationRouter.path.count)
+//                    })
+                    
+                    NavigationLink(destination: LogInVCWrapper())
+                    {
                         HStack(spacing: 12) {
                             Image(systemName: "envelope")
                                 .resizable()
@@ -125,12 +130,12 @@ struct LoginOptionsView: View {
                     
                     
                     //MARK: -- Register Button
-                    Button(action: {
-                        navigationRouter.push(.createAdminAccount)
-                       }) {
+                    NavigationLink(destination: AdminOnboardingContainerView())
+                          {
                            HStack(spacing: 12) {
-Text("Create Organization")
-                               .font(.headline)
+                               
+                               Text("Register your Organization")
+                                   .font(.headline)
                                    .fontWeight(.semibold)
                                    .foregroundColor(.white)
                                    .frame(maxWidth: .infinity, minHeight: 50)
@@ -170,6 +175,15 @@ Text("Create Organization")
                 dismissButton: .default(Text("OK"))
             )
         }
+        .onAppear(){
+            print("LoginOptions Router:", ObjectIdentifier(navigationRouter))
+            print("LoginOptions Path Count:", navigationRouter.path.count)
+        }
+        
+        //MARK: --  Navigation Bar Modifi
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .tint(.black)
     }
 }
 

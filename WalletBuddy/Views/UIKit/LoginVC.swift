@@ -13,16 +13,19 @@ class LoginVC: UIViewController {
     
     private let appViewModel: AppViewModel
     private let navigationRouter: NavigationRouter
+    private let dismiss: DismissAction
     
     private lazy var viewModel = LoginViewModel()
     
     
     init(
         appViewModel: AppViewModel,
-        navigationRouter: NavigationRouter
+        navigationRouter: NavigationRouter,
+        dismiss: DismissAction
     ){
         self.appViewModel = appViewModel
         self.navigationRouter = navigationRouter
+        self.dismiss = dismiss
         super.init(nibName: nil, bundle: nil)
     }
     required init(coder: NSCoder){
@@ -218,6 +221,11 @@ class LoginVC: UIViewController {
             switch result {
             case .success:
                 await appViewModel.handleLoginSuccess(forceRefresh: true)
+                await MainActor.run{
+                    
+                    //Dismiss the current view 
+                   dismiss()
+                }
             case .failure(let message):
                 errorLabel.text = message
                 errorLabel.isHidden = false

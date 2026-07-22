@@ -164,14 +164,15 @@ class AppViewModel: ObservableObject {
                 try authService.logout()
                 await performLogoutCleanup()
                 
+               
+              
+                
+                navigationRouter.path = NavigationPath()
+            
                 userSession.clear()
 
                 
                 state = .loggedOut
-                
-               navigationRouter.path = NavigationPath()
-            
-          
 
                 print("App State: logedOut")
             } catch {

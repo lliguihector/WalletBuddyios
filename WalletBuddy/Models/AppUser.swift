@@ -20,6 +20,7 @@ struct AppUser: Codable, Identifiable{
     let profileImageUrl: String? //Can be nill 
     let title: String
     let organization: Organization?
+    let onboardingStatus: OnboardingStatus?
     let devices: [Device]?
     //let beacon: String - can be null 
     
@@ -38,6 +39,7 @@ struct AppUser: Codable, Identifiable{
         case profileImageUrl
         case title
         case organization
+        case onboardingStatus
         case devices
         
     }
@@ -61,6 +63,7 @@ struct Organization: Codable{
     let beaconUuid: String?
     let address: Address
     let location: Location
+
     
     //Coding keys -- Used to map backend JSON keys to Swift property names when they differ
     enum CodingKeys: String, CodingKey{
@@ -74,6 +77,7 @@ struct Organization: Codable{
         case beaconUuid
         case address
         case location
+ 
     }
     
 }
@@ -101,4 +105,14 @@ struct Device: Codable{
     let systemVersion: String
     let appVersion: String
     let lastUsedAt: Date
+}
+
+
+enum OnboardingStatus: String, Codable{
+    case invite = "invited"
+    case emailVerificationRequired = "email_verification_required"
+    case organizationSetupRequired = "organization_setup_required"
+    case passwordResetRequired = "password_reset_required"
+    case profileSetupRequired = "profile_setup_required"
+    case completed = "completed"
 }

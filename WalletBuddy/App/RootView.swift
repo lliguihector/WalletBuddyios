@@ -24,18 +24,21 @@ struct RootView: View {
                     switch appViewModel.state {
                         
                     case .loggedOut:
-                        
                         LoginOptionsView()
                     case .loadingSkeleton:
-                        
                         SkeletonView()
-                    case .loggedIn:
                         
+                        //Login As Employee
+                    case .loggedIn:
                         MainView()
                         
+                        //login As Admin
                     case.onboarding:
-                        
                         OnboardingView()
+                        
+                        //If onboarding isnt complete
+                    case .onboardingAdmin:
+                        ResumeOnboardingView()
                         
                     }
                     }
@@ -56,5 +59,19 @@ struct RootView: View {
         }
         
         .animation(.easeInOut, value: appViewModel.isLoading)
+        .onAppear(){
+            print("Root Router:", ObjectIdentifier(navigationRouter))
+            print("Root Path Count:", navigationRouter.path.count)
+            print("===== ROOT VIEW APPEARED =====")
+            print("ROOT VIEW APPEARED")
+        }
+        .onDisappear(){
+            print("===== ROOT VIEW DISAPPEARED =====")
+            print("ROOT VIEW DISAPPEARED")
+        }
+        .onChange(of: appViewModel.state) { old, new in
+            print("STATE:", old, "→", new)
+            print("PATH COUNT:", navigationRouter.path.count)
+        }
     }
 }
