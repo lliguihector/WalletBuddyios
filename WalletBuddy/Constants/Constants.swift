@@ -15,7 +15,7 @@ struct Constants {
     
     //MARK: LOGIN/LOGOUT/STATE
 static let checkInOrCreateEndPoint = "\(apiBaseURL)/user/check-or-create"
-
+static let registerAdmin = "\(apiBaseURL)/user/auth/register-admin"
 
     //MARK: -- EMPLOYEE
     //CHEKIN

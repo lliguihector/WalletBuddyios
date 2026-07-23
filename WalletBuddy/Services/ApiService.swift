@@ -14,7 +14,7 @@ struct ErrorResponse: Decodable{
 //Enumeration for checkin
 enum APIError: Error{
     case invalidURL
-    case serializationError
+    case encodingError
     case decodingError
     case networkError(Error)
     case serverError(statusCode: Int, message: String?)
@@ -28,16 +28,12 @@ enum CheckoutError: Error {
     case serverError(message: String?)
 }
 
-
-
-
 final class ApiService {
     
     static let shared = ApiService()
     private init() {}
-
-    //MARK: LOGIN/LOGOUT/STATE
     
+    //MARK: LOGIN/LOGOUT/STATE
     func verifyUser(withToken token: String) async -> AppUser? {
         //New parameters neeeded DeviceID
         
@@ -95,6 +91,74 @@ final class ApiService {
         return nil
     }
     
+    //Admin registration + email verification NOTE: move to AuthService.swift
+    func registerAdmin(firstName: String,lastName: String,email: String,password: String) async -> Result<RegisterAdminResponse, APIError> {
+
+        // URL
+        guard let url = URL(string: Constants.registerAdmin) else {
+            return .failure(.invalidURL)
+        }
+
+        // Request body
+        let body = RegisterAdminRequest(
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: password
+        )
+
+        // Create request
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // Encode JSON
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            return .failure(.encodingError)
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+            }
+
+            switch httpResponse.statusCode {
+
+            case 200...299:
+                do {
+                    let decodedResponse = try JSONDecoder().decode(
+                        RegisterAdminResponse.self,
+                        from: data
+                    )
+                    return .success(decodedResponse)
+                } catch {
+                    return .failure(.decodingError)
+                }
+
+            default:
+                let errorResponse = try? JSONDecoder().decode(
+                    RegisterAdminResponse.self,
+                    from: data
+                )
+
+                return .failure(
+                    .serverError(
+                        statusCode: httpResponse.statusCode,
+                        message: errorResponse?.message
+                    )
+                )
+            }
+
+        } catch {
+            return .failure(.networkError(error))
+        }
+    }
+                    
+                    
     //MARK: -- ADMIN
     //MARK: -- EMPLOYEE
     //CHECKIN
@@ -115,7 +179,7 @@ final class ApiService {
         do{
             httpBody = try JSONEncoder().encode(body)
         }catch{
-            return .failure(.serializationError)
+            return .failure(.encodingError)
         }
         
         var request = URLRequest(url: url)

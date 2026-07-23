@@ -338,6 +338,8 @@ struct HomeTabView: View {
                     
                     VStack(spacing: 12){
                         if homeVM.isLoadingActiveUsers{
+                            
+                            //Built in swift UI component by apple 
                             ProgressView("Loading Active Users...")
                                 .frame(maxWidth: .infinity)
                         }else if let error = homeVM.activeUsersError{

@@ -139,8 +139,8 @@ private func handleLocationUpdate(_ location: CLLocation) async{
             switch error{
             case .invalidURL:
                 errorMessage = "Something went wrong with the server URL."
-            case .serializationError:
-            errorMessage = "Could not prepare location data to send."
+            case .encodingError:
+            errorMessage = "Failure to encode request body."
             case .decodingError:
                 errorMessage = "Could not understand the server response"
             case .networkError(let err):

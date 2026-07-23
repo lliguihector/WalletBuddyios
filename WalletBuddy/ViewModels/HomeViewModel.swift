@@ -66,8 +66,8 @@ class HomeViewModel: ObservableObject{
                 switch error{
                 case .invalidURL:
                     errorMessage = "Invalid server URL."
-                case .serializationError:
-                    errorMessage = "Failed to process server response"
+                case .encodingError:
+                    errorMessage = "Failed to encode Request"
                 case .decodingError:
                     errorMessage = "Failed to decode data."
                 case .networkError(let err):
@@ -105,7 +105,7 @@ class HomeViewModel: ObservableObject{
                 showFailureAlert = false
                 errorMessage = nil
                 successMessage = message
-               showSuccessAlert = true
+                showSuccessAlert = true
 
             case .failure(let error):
                 showFailureAlert = true
@@ -173,8 +173,8 @@ class HomeViewModel: ObservableObject{
                 case .serverError( _ , let message):
                     //Use backend's actual error message, or a dedault
                     activeUsersError = message ?? "Server rejected the request."
-                case .serializationError:
-                    activeUsersError = "Serialization error."
+                case .encodingError:
+                    activeUsersError = "Failure to encode request body."
                 }
                 print("API Error: \(errorMessage ?? "Unknown")")
             }

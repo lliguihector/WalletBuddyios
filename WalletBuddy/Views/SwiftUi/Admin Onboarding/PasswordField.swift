@@ -18,15 +18,17 @@ struct PasswordField: View {
         HStack {
 
             Image(systemName: "lock")
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
 
             if isVisible {
 
                 TextField(title, text: $text)
+                    .tint(.blue)
 
             } else {
 
                 SecureField(title, text: $text)
+                    .tint(.blue)
             }
 
             Button {
@@ -41,7 +43,13 @@ struct PasswordField: View {
 
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(.tertiarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondary.opacity(0.7), lineWidth: 1)
+            
+        )
     }
 }
