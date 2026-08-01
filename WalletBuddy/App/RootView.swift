@@ -30,12 +30,11 @@ struct RootView: View {
                         
                         //Login As Employee
                     case .loggedIn:
-                        MainView()
+                        MainView() 
                         
                         //login As Admin
                     case.onboarding:
-                        OnboardingView()
-                        
+                        ResumeOnboardingView()
                         //If onboarding isnt complete
                     case .onboardingAdmin:
                         ResumeOnboardingView()

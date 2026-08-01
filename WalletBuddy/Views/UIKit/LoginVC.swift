@@ -80,8 +80,8 @@ class LoginVC: UIViewController {
         createDismissKeyboardTapGesture()
         
         // Pre-fill for testing
-        usernameTextField.text = "lliguichuzcah@gmail.com"
-        passwordTextField.text = "poli09"
+        usernameTextField.text = "manuelligui@hotmail.com"
+        passwordTextField.text = "12345678"
         
 
         

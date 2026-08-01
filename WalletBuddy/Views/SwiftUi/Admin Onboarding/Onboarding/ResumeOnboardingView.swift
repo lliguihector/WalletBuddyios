@@ -8,7 +8,6 @@ import SwiftUI
 struct ResumeOnboardingView: View {
 
     @EnvironmentObject var appViewModel: AppViewModel
-
     @StateObject private var onboardingVM = AdminOnboardingViewModel()
 
     var body: some View {
@@ -19,15 +18,15 @@ struct ResumeOnboardingView: View {
             case .invite:
                 LoginOptionsView()
             case .emailVerificationRequired:
-                LoginOptionsView()
+            VerifyEmail()
             case .organizationSetupRequired:
-            LoginOptionsView()
+            OrganizationInputView()
             case .passwordResetRequired:
             LoginOptionsView()
             case .profileSetupRequired:
             LoginOptionsView()
             case .completed:
-            LoginOptionsView()
+            MainView()
             case nil:
                 ProfileView()
             }

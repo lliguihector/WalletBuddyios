@@ -91,7 +91,7 @@ final class ApiService {
         return nil
     }
     
-    //Admin registration + email verification NOTE: move to AuthService.swift
+    //Admin registration + email verification email sent NOTE: move to AuthService.swift
     func registerAdmin(firstName: String,lastName: String,email: String,password: String) async -> Result<RegisterAdminResponse, APIError> {
 
         // URL
@@ -157,7 +157,121 @@ final class ApiService {
             return .failure(.networkError(error))
         }
     }
-                    
+           
+ 
+    // Email Verification Check
+    func checkEmailVerification(withToken token: String) async -> Result<EmailVerificationResponse, APIError> {
+
+        guard let url = URL(string: Constants.verifyEmailEndPoint) else {
+            print("❌ Invalid URL: \(Constants.verifyEmailEndPoint)")
+            return .failure(.invalidURL)
+        }
+
+        print("🌐 API Request URL: \(url.absoluteString)")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+
+        print("📤 Sending Request:")
+        print("Method: \(request.httpMethod ?? "")")
+        print("Headers: \(request.allHTTPHeaderFields ?? [:])")
+        print("Token length: \(token.count)")
+
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("❌ Invalid HTTP Response")
+                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+            }
+
+
+            print("📥 Response Status Code: \(httpResponse.statusCode)")
+
+
+            // Print raw server response
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("📄 Raw Response:")
+                print(responseString)
+            } else {
+                print("⚠️ Could not convert response data to string")
+            }
+
+
+            guard (200...299).contains(httpResponse.statusCode) else {
+
+                print("❌ Server returned error status code: \(httpResponse.statusCode)")
+
+
+                if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+
+                    print("🔥 Server Error Message: \(errorResponse.error)")
+
+                    return .failure(
+                        .serverError(
+                            statusCode: httpResponse.statusCode,
+                            message: errorResponse.error
+                        )
+                    )
+
+                } else {
+
+                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+
+                    print("🔥 Unknown Server Error:")
+                    print(message)
+
+                    return .failure(
+                        .serverError(
+                            statusCode: httpResponse.statusCode,
+                            message: message
+                        )
+                    )
+                }
+            }
+
+
+            do {
+                let decodedResponse = try JSONDecoder().decode(
+                    EmailVerificationResponse.self,
+                    from: data
+                )
+
+                print("✅ Email verification response decoded successfully:")
+                print(decodedResponse)
+
+                return .success(decodedResponse)
+
+            } catch {
+
+                print("❌ JSON Decoding Failed")
+                print("Error: \(error)")
+
+                if let responseString = String(data: data, encoding: .utf8) {
+                    print("Response that failed decoding:")
+                    print(responseString)
+                }
+
+                return .failure(.decodingError)
+            }
+
+
+        } catch {
+
+            print("❌ Network Request Failed")
+            print("Error: \(error.localizedDescription)")
+
+            return .failure(.networkError(error))
+        }
+    }
+        
+    
+    
                     
     //MARK: -- ADMIN
     //MARK: -- EMPLOYEE

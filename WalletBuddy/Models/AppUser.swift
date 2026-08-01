@@ -13,7 +13,6 @@ struct AppUser: Codable, Identifiable{
     let uid: String    //Firebase UID
     let email: String
     let emailVerified: Bool
-    let onboardingStep: OnboardingStep
     let firstName: String
     let lastName: String
     let providerIds: [String]?
@@ -32,7 +31,6 @@ struct AppUser: Codable, Identifiable{
         case uid
         case email
         case emailVerified
-        case onboardingStep
         case firstName
         case lastName
         case providerIds
@@ -46,11 +44,6 @@ struct AppUser: Codable, Identifiable{
 
 }
 
-enum OnboardingStep: Int, Codable {
-    case enterName = 0
-    case complete = 1
-    // Add more steps as needed
-}
 
 //Mark: - Organization model
 struct Organization: Codable{
@@ -116,3 +109,4 @@ enum OnboardingStatus: String, Codable{
     case profileSetupRequired = "profile_setup_required"
     case completed = "completed"
 }
+

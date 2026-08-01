@@ -8,11 +8,14 @@ import SwiftUI
 struct AdminOnboardingContainerView: View {
 
     @StateObject private var onboardingVM = AdminOnboardingViewModel()
-
+    @EnvironmentObject var appViewModel: AppViewModel
     var body: some View {
 
-        CreateAdminAccountView()
+            CreateAdminAccountView()
             .environmentObject(onboardingVM)
+            .environmentObject(appViewModel)
+        }
+           
 
-    }
+
 }

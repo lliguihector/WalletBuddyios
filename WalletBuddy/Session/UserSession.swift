@@ -13,10 +13,7 @@ class UserSession: ObservableObject {
     @Published private(set) var user: AppUser?
     @Published var profileImage: UIImage?   // Cached image
     
-    
-    
-    
-    
+
     init(){}
     
     //Stores currently logged in user information inside UserSession and loads their profile image
@@ -24,7 +21,6 @@ class UserSession: ObservableObject {
         self.user = user
         Task { await loadProfileImage() }
     }
-    
     
 //Removes stored user information and carched profile image from memory
     func clear() {

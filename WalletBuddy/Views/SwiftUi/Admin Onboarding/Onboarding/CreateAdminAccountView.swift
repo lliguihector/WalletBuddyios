@@ -10,10 +10,11 @@ import SwiftUI
 struct CreateAdminAccountView: View {
     
     @EnvironmentObject var onboardingVM: AdminOnboardingViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
 
     @State private var showPassword = false
     @State private var showConfirmPassword = false
-    
+    @State private var navigateToVerifyEmail = false
     
     enum Field{
         case firstName
@@ -51,7 +52,7 @@ struct CreateAdminAccountView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         
                         
-                        
+                        //MARK: first Name
                         VStack(alignment: .leading, spacing: 4) {
                             CustomTextField(
                                 title: "First Name",
@@ -72,7 +73,7 @@ struct CreateAdminAccountView: View {
                             
                         }
                         
-                        
+                        //MARK: last Name
                         VStack(alignment: .leading, spacing: 4) {
                         CustomTextField(
                             title: "Last Name",
@@ -92,7 +93,7 @@ struct CreateAdminAccountView: View {
                             }
                         }
                         
-                        
+                        //MARK: email
                         VStack(alignment: .leading, spacing: 4) {
                         CustomTextField(
                             title: "Work Email",
@@ -111,7 +112,7 @@ struct CreateAdminAccountView: View {
                                     .foregroundStyle(.red)
                             }
                         }
-                        
+                        //MARK: password
                         VStack(alignment: .leading, spacing: 4) {
                             PasswordField(
                                 title: "Password",
@@ -129,7 +130,7 @@ struct CreateAdminAccountView: View {
                                     .foregroundStyle(.red)
                                 
                             }}
-                        
+                        //MARK: confirm password
                         VStack(alignment: .leading, spacing: 4) {
                             PasswordField(
                                 title: "Confirm Password",
@@ -151,12 +152,19 @@ struct CreateAdminAccountView: View {
                         
                     }
                     
+                    
+                    //MARK: Continue Button
                     Button {
-             
+                        onboardingVM.showAlert = false
                         Task {
                             
-                            await onboardingVM.createFireBaseUser()
-                            // Navigate to Verify Email
+                         let success = await onboardingVM.createFireBaseUser()
+                     
+                            if success {
+                                navigateToVerifyEmail = true
+                            }
+                            
+                       
                         }
                         
                     } label: {
@@ -194,6 +202,13 @@ struct CreateAdminAccountView: View {
             }
 
         }
+        
+        .navigationDestination(isPresented: $navigateToVerifyEmail) {
+            VerifyEmail()
+                .environmentObject(onboardingVM)
+                .environmentObject(appViewModel)
+         
+        }
         //Navigation Style
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -216,6 +231,16 @@ struct CreateAdminAccountView: View {
             }
         }
         .tint(.black)
+        .alert(onboardingVM.alertTitle,
+               isPresented: $onboardingVM.showAlert) {
+            
+            Button("OK", role: .cancel) {
+                
+            }
+            
+        } message: {
+            Text(onboardingVM.errorMessage ?? "Something went wrong.")
+        }
         
     }
 }

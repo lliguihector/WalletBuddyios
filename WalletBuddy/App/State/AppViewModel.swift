@@ -39,19 +39,12 @@ class AppViewModel: ObservableObject {
         self.navigationRouter = navigationRouter
     }
     
-    //SYNC With Backend Method
+    //MARK: - SYNC
     func syncAppUser(forceRefresh: Bool = false) async{
- 
-        
-        //Simulate netork delay
-//        try? await Task.sleep(nanoseconds: 1500_000_000)
-        guard UIApplication.shared.applicationState == .active else {
-            
-            print("App in not active - skipping sync")
-            
-            return
-        }
-        
+//        guard UIApplication.shared.applicationState == .active else {
+//            print("App in not active - skipping sync")
+//            return
+//        }
         
         do{
             guard let idToken = try await authService.getIDToken(forceRefresh: forceRefresh) else{
@@ -59,99 +52,76 @@ class AppViewModel: ObservableObject {
             logout()
                 return
             }
-            
             if let user = await apiService.verifyUser(withToken: idToken){
-
-                
-                
                 userSession.setUser(user)
-     
-                print("✅ Synced latest AppUser from backend")
+                print("User was synced")
             }else{
-                print("❌ Failed to fetch user from backend")
+     
                 activeAlert = AppAlert(message: "We couldn’t complete your sign-in. Please try again.")
-    
                 logout()
+                return
             }
         }catch{
-            print("❌ syncAppUser error: \(error.localizedDescription)")
             activeAlert = AppAlert(message: "Something went wrong. Please check your connection and try again.")
         }
     }
     
 
-//Call this on app launch to check for an existing user session
+//MARK: - On App launch check for user session
     func initializeSession()async{
 
-      print("initializing Session started")
-        
         isLoading = true
-        try? await Task.sleep(nanoseconds: 300_000_000)
-        isLoading = false
-        
-        
-        
-        print("Firebase logged in:", authService.isUserLoggedIn())
+
         
         if authService.isUserLoggedIn(){
             
-            
-            print("➡️ Existing user found")
-            
-            //Show skeleton immediately while we verify user
-//            state = .loadingSkeleton
- 
-            
-          
               await handleLoginSuccess()
-          
 
-           
         }else{
-            print("➡️ No user")
+      
             state = .loggedOut
         }
-        
-        print("Initializing App Session user not loged in yet")
+        isLoading = false
+        print("Final State:", state)
     }
     
     
     
-    
-    
-    
-    
+    //MARK: - Navigate user based on onboardingState
+    func handleLoginSuccess(forceRefresh: Bool = false) async {
+        await syncAppUser(forceRefresh: forceRefresh)
 
-    func handleLoginSuccess(forceRefresh: Bool = false) async{
+        guard let user = userSession.user else {
+            state = .loggedOut
+            return
+        }
 
-                await syncAppUser(forceRefresh: forceRefresh)
-      
-        
-        //Small delay for smoother transition
-          
-                switch userSession.user?.onboardingStep {
-                case .enterName:
-                    state = .onboarding
-                case .complete:
-                    
-                  
-                    state = .loggedIn
-                    
-                    
-                    //Clears the Navigation stack Stack
-    
-                    navigationRouter.path = NavigationPath()
-                    
-                    
-                    DeviceManager.shared.requestNotificationPermissionAndRegister()
-               
-                default:
-                    state = .loggedOut
-                }
-                
-            //TODO: Fetch additional user profile data here graphq
-    
+
+        switch user.onboardingStatus {
+        case .completed:
+            state = .loggedIn
+
+        default:
+
+            state = .onboarding
+        }
     }
+    
+    
+    // MARK: - Handle User Login
+    func userDidLogin(forceRefresh: Bool = true) async {
+        
+        print("🔐 User login detected. Syncing app user...")
+        
+        isLoading = true
+        
+        defer {
+            isLoading = false
+        }
+        
+        await handleLoginSuccess(forceRefresh: forceRefresh)
+    }
+    
     
     func logout() {
         SpinnerManager.shared.show()

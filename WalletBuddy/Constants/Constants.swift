@@ -10,13 +10,13 @@ struct Constants {
     static let appName = "WalletBuddy"
     
     
-    static let apiBaseURL = "https://determitapi-709b9bad1b56.herokuapp.com"
-//    static let apiBaseURL = "http://localhost:3000"
+   static let apiBaseURL = "https://determitapi-709b9bad1b56.herokuapp.com"
+  //static let apiBaseURL = "http://localhost:3000"
     
     //MARK: LOGIN/LOGOUT/STATE
 static let checkInOrCreateEndPoint = "\(apiBaseURL)/user/check-or-create"
 static let registerAdmin = "\(apiBaseURL)/user/auth/register-admin"
-
+static let verifyEmailEndPoint = "\(apiBaseURL)/user/api/auth/check-email-verification"
     //MARK: -- EMPLOYEE
     //CHEKIN
     static let checkInEndPoint = "\(apiBaseURL)/checkin/checkin"
