@@ -21,6 +21,8 @@ struct ResumeOnboardingView: View {
             VerifyEmail()
             case .organizationSetupRequired:
             OrganizationInputView()
+            case .organizationLocationRequired:
+            OrganizationSetLocationView()
             case .passwordResetRequired:
             LoginOptionsView()
             case .profileSetupRequired:

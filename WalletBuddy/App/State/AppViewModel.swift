@@ -18,7 +18,7 @@ class AppViewModel: ObservableObject {
     static let shared = AppViewModel(authService: FirebaseAuthManager.shared, apiService:ApiService.shared, userRepository: UserRepository.shared, deviceManager: DeviceManager.shared, navigationRouter: NavigationRouter.shared )
     
     //@Publish automaticly emits a change notification
-    @Published var state: AppState = .loggedOut
+    @Published var state: AppState = .launching
     @Published var activeAlert: AppAlert? = nil
     @Published var isLoading: Bool = false
 
@@ -70,9 +70,9 @@ class AppViewModel: ObservableObject {
 //MARK: - On App launch check for user session
     func initializeSession()async{
 
-        isLoading = true
-
-        
+     
+        // Keep splash visible for 1 second
+          try? await Task.sleep(for: .seconds(1))
         if authService.isUserLoggedIn(){
             
               await handleLoginSuccess()
@@ -81,7 +81,7 @@ class AppViewModel: ObservableObject {
       
             state = .loggedOut
         }
-        isLoading = false
+    
         print("Final State:", state)
     }
     

@@ -23,8 +23,13 @@ struct RootView: View {
                     
                     switch appViewModel.state {
                         
+                    case .launching:
+                        SplashView()
+                        
                     case .loggedOut:
                         LoginOptionsView()
+                        
+                        
                     case .loadingSkeleton:
                         SkeletonView()
                         

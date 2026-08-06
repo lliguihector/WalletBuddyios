@@ -8,6 +8,7 @@ import FirebaseAuth
 
 
 enum AppState {
+    case launching 
     case loggedOut
     case loadingSkeleton
     case loggedIn

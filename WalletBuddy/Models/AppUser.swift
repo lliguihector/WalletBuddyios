@@ -105,6 +105,7 @@ enum OnboardingStatus: String, Codable{
     case invite = "invited"
     case emailVerificationRequired = "email_verification_required"
     case organizationSetupRequired = "organization_setup_required"
+    case organizationLocationRequired = "organization_location_required"
     case passwordResetRequired = "password_reset_required"
     case profileSetupRequired = "profile_setup_required"
     case completed = "completed"
