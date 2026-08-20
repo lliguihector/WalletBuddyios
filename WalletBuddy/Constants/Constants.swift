@@ -17,6 +17,12 @@ struct Constants {
 static let checkInOrCreateEndPoint = "\(apiBaseURL)/user/check-or-create"
 static let registerAdmin = "\(apiBaseURL)/user/auth/register-admin"
 static let verifyEmailEndPoint = "\(apiBaseURL)/user/api/auth/check-email-verification"
+static let resendEmailVerificationEndPoint = "\(apiBaseURL)/user/api/auth/resend-email-verification"
+static let createOrganizationEndPoint = "\(apiBaseURL)/organization/api/organizations"
+static let uploadImageEndPoint = "\(apiBaseURL)/organization/:organizationId/logo/upload-url"
+    
+    
+    
     //MARK: -- EMPLOYEE
     //CHEKIN
     static let checkInEndPoint = "\(apiBaseURL)/checkin/checkin"

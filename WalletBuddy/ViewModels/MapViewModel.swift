@@ -18,8 +18,13 @@ class MapViewModel: ObservableObject {
     //MARK: - Published Properties
     @Published var showSuccessAlert = false
     @Published var showFailureAlert = false
+    
+    
+    
     @Published var errorMessage: String? = nil
     @Published var isLoading: Bool = false
+    
+    
     @Published var shouldFollowUser = true
     @Published var isAuthorized: Bool = false
     //MARK: - State
@@ -45,13 +50,15 @@ class MapViewModel: ObservableObject {
 
     //MARK: - Init
     init(userSession:UserSession ) {
+        
+        
         self.userSession = userSession
         
         
         
-        if let coords = userSession.user?.organization?.location.coordinates,
+        if let coords = userSession.user?.organization?.location?.coordinates,
            coords.count == 2 {
-            let orgCoord = CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
+            let orgCoord = CLLocationCoordinate2D(latitude: coords[1], longitude: coords[0])
             organizationCoordinate = orgCoord
             
             organizationCamera = .region(
@@ -148,6 +155,8 @@ private func handleLocationUpdate(_ location: CLLocation) async{
             case .serverError( _ , let message):
                 //Use backend's actual error message, or a dedault
                 errorMessage = message ?? "Server rejected the request."
+            case .unauthorized:
+                errorMessage = "Your session has expired. Please log in again."
             }
             }
         } catch {

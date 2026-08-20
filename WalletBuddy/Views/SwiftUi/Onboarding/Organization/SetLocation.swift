@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-struct OrganizationSetLocationView: View {
+struct SetLocation: View {
     var body: some View {
         Text("Lets set your Organization Location")
     }

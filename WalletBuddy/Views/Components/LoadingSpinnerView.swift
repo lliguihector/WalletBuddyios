@@ -17,12 +17,21 @@ struct LoadingSpinnerView: View {
             // Square background for the spinner
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.black.opacity(0.8)) // black with opacity
-                .frame(width: 100, height: 100) // square size
+                .frame(width: 120, height: 110) // square size
             
             // White spinner
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                .scaleEffect(1.5)
+            
+            
+            VStack(spacing: 14){
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(1.5)
+                
+                Text("Loading...")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white)
+            }
+         
         }
     }
 }

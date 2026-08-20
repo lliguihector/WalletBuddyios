@@ -31,9 +31,4 @@ final class FirebaseAuthManager: AuthenticationService{
         return try await Auth.auth().currentUser?.getIDTokenResult(forcingRefresh: forceRefresh).token
     }
     
-    
- 
-    
-    
-    
 }

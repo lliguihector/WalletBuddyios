@@ -17,8 +17,6 @@ class AdminOnboardingViewModel: ObservableObject{
     private var apiService = ApiService.shared
     private var firebaseAuthService = FirebaseAuthManager.shared
     
-    
-    
     //MARK: - UI Error messages
     @Published var firstNameError: String? = nil
     @Published var lastNameError: String? = nil
@@ -31,20 +29,18 @@ class AdminOnboardingViewModel: ObservableObject{
     @Published var organizationEmailError: String? = nil
     @Published var organizationPhoneNumberError: String? = nil
     @Published var organizationWebsiteUrlError: String? = nil
-    
+    @Published var industryError: String?
     //MARK: - Alerts
     @Published var alertTitle = "Error"
     @Published var showAlert = false
     @Published var errorMessage: String? = nil
-
-   
+    
     //MARK: - Onboarding
     @Published var currentStep = 1
     let  totalSteps = 6
     
     //MARK: - Loading
     @Published var isLoading: Bool = false
-    
     
     //MARK: - Account Infromation
     @Published var firstName = ""
@@ -53,16 +49,15 @@ class AdminOnboardingViewModel: ObservableObject{
     @Published var password = ""
     @Published var confirmPassword = ""
 
-    
     //MARK: - Organization Inforomation
     @Published var organizationName = ""
     @Published var industry: String = ""
     @Published var organizationEmail = ""
     @Published var organizationPhoneNumber  = ""
-    @Published var organizationWebsiteUrl = "" 
+    @Published var organizationWebsiteUrl = ""
+    //Image 
+    @Published var organizationLogo: UIImage?
     
-    
-    @Published var industryError: String?
     //CAT errase this from api and here V
     @Published var registerResponse: RegisterAdminResponse?
     
@@ -114,7 +109,6 @@ class AdminOnboardingViewModel: ObservableObject{
         
     }
     }
-    
     //MARK: - Login User to fireBase
     func loginUserwithFirebase() async -> LoginResult{
         
@@ -129,10 +123,172 @@ class AdminOnboardingViewModel: ObservableObject{
         }
         
     }
+
+    //MARK: - Verify Email
+    func verifyEmail()async{
+        
+        
+        isLoading = true
+        defer {isLoading = false}
+        
+        
+        do{
+            //Get Firebase ID token
+            guard let idToken = try await firebaseAuthService.getIDToken(forceRefresh: true)else{
+                errorMessage = "Authentication failed. Please log in again."
+                showAlert = true
+           
+                return
+            }
+            
+            let result = await apiService.checkEmailVerification(withToken: idToken)
+
+            
+            switch result {
+
+            case .success(let response):
+
+                if response.emailVerified {
+
+                    // Email verified successfully
+                    emailVerified = true
+                    
+                    
+                    
+                    // Move to next onboarding step
+                    // navigationRouter.push(.organizationSetup)
+                    
+              
+
+                } else {
+
+                    // Email not verified yet
+            
+                    alertTitle = "Verification Required"
+                    errorMessage = response.message ?? "Please verify your email to continue."
+                    showAlert = true
+                }
+
+
+            case .failure(let error):
+
+                handleAPIError(error)
+            }
+
+
+         
+            
+            
+            
+        }catch{
+         
+            alertTitle = "Error"
+            errorMessage = "Unexpected error: \(error.localizedDescription)"
+            showAlert = true
+        }
+        
+        
+    }
+    //MARK: - Resend Email Verification
+    func resendEmailVerification()async{
+        isLoading = true
+        defer {isLoading = false}
+        
+        do{
+            //Get Firebase ID token
+            guard let idToken = try await firebaseAuthService.getIDToken(forceRefresh: true)else{
+                errorMessage = "Authentication failed. Please log in again."
+                showAlert = true
+                return
+            }
+            
+            let result = await apiService.resendEmailVerification(token: idToken)
+            
+            
+            switch result{
+                
+            case .success(let response):
+                alertTitle = "Email Sent"
+                errorMessage = response.message
+                showAlert = true
+                
+            case .failure(let error):
+                        handleAPIError(error)
+            }
+        }catch {
+            alertTitle = "Error"
+            errorMessage = "Unexpected error: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+    
+    func registerOrganization()async -> Bool{
+        
+        
+        //Validate user Input
+        guard validateOrganizationInput() else{
+            return false
+        }
+        
+        //Loading State
+        isLoading = true
+        errorMessage = nil
+        defer {isLoading = false}
+        
+     
+          
+        do {
+            //Get Firebase ID token
+            guard let idToken = try await firebaseAuthService.getIDToken(forceRefresh: true)
+            else{
+                
+                alertTitle = "Authentication Error"
+                errorMessage = "Authentication failed. Please log in again."
+                showAlert = true
+                
+                return false
+            }
+                
+            
+            //Create Organization
+                let result = await apiService.createOrganization(token: idToken, name: organizationName, industry: industry, email: organizationEmail, phone: organizationPhoneNumber, website: organizationWebsiteUrl)
+                
+            
+            switch result{
+  
+            case .success(let response):
+                print("Organization Created\(response)")
+   
+                return true
+                
+                
+            case .failure(let error):
+                
+               handleAPIError(error)
+                
+                return false
+            }
+                
+                
+            }catch{
+                alertTitle = "Error"
+                errorMessage = "Unexpected error: \(error.localizedDescription)"
+                showAlert = true
+            }
+    
+        
+        
+        return true
+    }
     
     
+    func registerOrganizationLocation()async{
+        
+    }
     
-    //MARK: Helper Fucntions
+    
+
+    //MARK: Helper Functions
     //Validate user client side input
     func validateUserInput() -> Bool {
         
@@ -225,6 +381,10 @@ class AdminOnboardingViewModel: ObservableObject{
 
         case .networkError:
             errorMessage = "Please check your internet connection."
+            
+        case .unauthorized:
+            alertTitle = "Authentication Error"
+            errorMessage = "Your session has expired. Please log in again."
 
         case .serverError(_, let message):
             errorMessage = message ?? "An unexpected error occurred."
@@ -233,72 +393,80 @@ class AdminOnboardingViewModel: ObservableObject{
         showAlert = true
     }
     
-    //MARK: - Verify Email
-
-    func verifyEmail()async{
+    
+    func validateOrganizationInput() -> Bool{
         
+        //Clear the previous errors
+        organizationNameError = nil
+        industryError = nil
+        organizationEmailError = nil
+        organizationPhoneNumberError  = nil
+        organizationWebsiteUrlError  = nil
         
-        isLoading = true
-        defer {isLoading = false}
+        let nameResult = OrganizationValidator.validateName(organizationName)
         
+        switch nameResult{
+        case .failure(let message):
+            
+            organizationNameError = message
+            return false
+            
+        case .success:
+            break
+        }
         
-        do{
-            //Get Firebase ID token
-            guard let idToken = try await firebaseAuthService.getIDToken(forceRefresh: true)else{
-                errorMessage = "Authentication failed. Please log in again."
-                showAlert = true
-           
-                return
-            }
+        let industryResult = OrganizationValidator.validateIndustry(industry)
+        
+        switch industryResult{
+        case .failure(let message):
             
-            let result = await apiService.checkEmailVerification(withToken: idToken)
-
+            industryError = message
+            return false
             
-            switch result {
-
-            case .success(let response):
-
-                if response.emailVerified {
-
-                    // Email verified successfully
-                    emailVerified = true
-                    
-                    
-                    
-                    // Move to next onboarding step
-                    // navigationRouter.push(.organizationSetup)
-                    
-              
-
-                } else {
-
-                    // Email not verified yet
+        case .success:
+            break
+        }
+        
+        let emailResult = OrganizationValidator.validateEmail(organizationEmail)
+        
+        switch emailResult{
+        case .failure(let message):
             
-                    alertTitle = "Verification Required"
-                    errorMessage = response.message ?? "Please verify your email to continue."
-                    showAlert = true
-                }
-
-
-            case .failure(let error):
-
-                handleAPIError(error)
-            }
-
-
-         
+            organizationEmailError = message
+            return false
             
+        case .success:
+            break
+        }
+        
+        let phoneNumberResult = OrganizationValidator.validatePhoneNumber(organizationPhoneNumber)
+        
+        switch phoneNumberResult{
+        case .failure(let message):
             
+            organizationPhoneNumberError = message
+            return false
             
-        }catch{
-         
-            alertTitle = "Error"
-            errorMessage = "Unexpected error: \(error.localizedDescription)"
-            showAlert = true
+        case .success:
+            break
         }
         
         
+        
+        let websiteUrlResult = OrganizationValidator.validateWebsiteURL(organizationWebsiteUrl)
+        
+        switch websiteUrlResult{
+        case .failure(let message):
+            
+            organizationWebsiteUrlError = message
+            return false
+            
+        case .success:
+            break
+        }
+        
+        return true
     }
+
 }
-    //Call API
-    //Uodate backend onboardingStatus = Complete
+

@@ -93,7 +93,7 @@ class LoginVC: UIViewController {
     func configureLoginLabel() {
         view.addSubview(loginLabel)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
-        loginLabel.text = "Welcome back!"
+        loginLabel.text = "Sign In"
         loginLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         loginLabel.textColor = .label
         loginLabel.textAlignment = .center

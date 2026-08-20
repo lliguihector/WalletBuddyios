@@ -35,13 +35,16 @@ struct MapWithOrgCheckInCircle: View {
         .overlay(
             // Draw circle on top of the map
             GeometryReader { geo in
-                if let org = organization,
-                   org.location.coordinates.count == 2 {
+                
+                
+                
+                if let location = organization?.location,
+                   location.coordinates.count == 2 {
                     Circle()
                         .stroke(Color.blue.opacity(0.3), lineWidth: 40) // lineWidth scaled roughly to meters
                         .frame(width: radiusInPoints(region: region, geo: geo, radius: checkInRadius),
                                height: radiusInPoints(region: region, geo: geo, radius: checkInRadius))
-                        .position(mapPosition(for: org, in: geo))
+                        .position(mapPosition(coordinates: location.coordinates, in: geo))
                 }
             }
         )
@@ -52,10 +55,10 @@ struct MapWithOrgCheckInCircle: View {
     // Convert organization to annotation item
     private func annotationItems() -> [OrgAnnotation] {
         guard let org = organization,
-              org.location.coordinates.count == 2 else { return [] }
+              let location = org.location , location.coordinates.count == 2 else { return [] }
         
-        let coord = CLLocationCoordinate2D(latitude: org.location.coordinates[0],
-                                           longitude: org.location.coordinates[1])
+        let coord = CLLocationCoordinate2D(latitude: location.coordinates[0],
+                                           longitude: location.coordinates[1])
         return [OrgAnnotation(id: org.name, coordinate: coord, title: org.name)]
     }
     
@@ -74,9 +77,19 @@ struct MapWithOrgCheckInCircle: View {
     }
     
     // Get screen position of org
-    private func mapPosition(for org: Organization, in geo: GeometryProxy) -> CGPoint {
-        let lonDelta = org.location.coordinates[1] - region.center.longitude
-        let latDelta = region.center.latitude - org.location.coordinates[0]
+    private func mapPosition(coordinates: [Double], in geo: GeometryProxy) -> CGPoint {
+        
+        guard coordinates.count == 2 else{
+            return CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+        
+        
+        
+        let longitude = coordinates[0]
+        let latitude = coordinates[1]
+        
+        let lonDelta = longitude - region.center.longitude
+        let latDelta = region.center.latitude - latitude
         
         let x = geo.size.width * CGFloat(0.5 + lonDelta / region.span.longitudeDelta)
         let y = geo.size.height * CGFloat(0.5 + latDelta / region.span.latitudeDelta)

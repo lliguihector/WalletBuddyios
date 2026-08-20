@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import FirebaseAuth
+import FirebaseAuth 
 
 struct AppAlert: Identifiable{
     let id = UUID()
@@ -41,10 +41,7 @@ class AppViewModel: ObservableObject {
     
     //MARK: - SYNC
     func syncAppUser(forceRefresh: Bool = false) async{
-//        guard UIApplication.shared.applicationState == .active else {
-//            print("App in not active - skipping sync")
-//            return
-//        }
+
         
         do{
             guard let idToken = try await authService.getIDToken(forceRefresh: forceRefresh) else{
@@ -52,17 +49,116 @@ class AppViewModel: ObservableObject {
             logout()
                 return
             }
-            if let user = await apiService.verifyUser(withToken: idToken){
-                userSession.setUser(user)
-                print("User was synced")
-            }else{
-     
-                activeAlert = AppAlert(message: "We couldn’t complete your sign-in. Please try again.")
-                logout()
-                return
-            }
-        }catch{
-            activeAlert = AppAlert(message: "Something went wrong. Please check your connection and try again.")
+            
+            
+            print("Authenticating user...\(idToken)")
+            let result = await apiService.verifyUser(withToken: idToken)
+   
+            
+            switch result {
+
+                    // MARK: - Success
+
+                    case .success(let user):
+
+                        userSession.setUser(user)
+
+                        print("✅ User was synced")
+
+
+                    // MARK: - Failure
+
+                    case .failure(let error):
+
+                        switch error {
+
+                        // Actual authentication failure
+                        case .unauthorized:
+
+                            print(
+                                "❌ Session is no longer authorized"
+                            )
+
+                            activeAlert = AppAlert(
+                                message:
+                                    "Your session has expired. Please sign in again."
+                            )
+
+                            logout()
+
+
+                        // Network problem
+                        case .networkError(let error):
+
+                            print(
+                                "⚠️ Network error - keeping user logged in:",
+                                error.localizedDescription
+                            )
+
+                            activeAlert = AppAlert(
+                                message:
+                                    "You're offline. Some information may not be up to date."
+                            )
+
+                            // IMPORTANT:
+                            // Do NOT call logout()
+
+
+                        // Server is having problems
+                        case .serverError(
+                            let statusCode,
+                            let message
+                        ):
+
+                            print(
+                                "⚠️ Server error:",
+                                statusCode,
+                                message ?? ""
+                            )
+
+                            activeAlert = AppAlert(
+                                message:
+                                    "We couldn't refresh your account right now. Please try again later."
+                            )
+
+                            // Do NOT logout()
+
+
+                        case .decodingError:
+
+                            print(
+                                "❌ Failed to decode user"
+                            )
+
+                            activeAlert = AppAlert(
+                                message:
+                                    "We couldn't load your account information."
+                            )
+
+                            // Don't logout because this
+                            // doesn't mean authentication expired.
+
+
+                        case .invalidURL,
+                             .encodingError:
+
+                            print(
+                                "❌ Internal API configuration error"
+                            )
+                        }
+                    }
+
+
+        } catch {
+            
+            print(
+                "❌ Firebase token error:",
+                error
+            )
+            
+            
+            
+            activeAlert = AppAlert(message: "We couldn't refresh your session. Please tcheck your connection.")
         }
     }
     
@@ -72,7 +168,7 @@ class AppViewModel: ObservableObject {
 
      
         // Keep splash visible for 1 second
-          try? await Task.sleep(for: .seconds(1))
+//          try? await Task.sleep(for: .seconds(1))
         if authService.isUserLoggedIn(){
             
               await handleLoginSuccess()

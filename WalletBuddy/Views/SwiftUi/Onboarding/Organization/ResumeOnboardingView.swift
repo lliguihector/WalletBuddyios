@@ -18,17 +18,17 @@ struct ResumeOnboardingView: View {
             case .invite:
                 LoginOptionsView()
             case .emailVerificationRequired:
-            VerifyEmail()
+                   VerifyEmail()
             case .organizationSetupRequired:
-            OrganizationInputView()
+                   SetDetails()
             case .organizationLocationRequired:
-            OrganizationSetLocationView()
+                  SetLocation()
             case .passwordResetRequired:
-            LoginOptionsView()
+                  LoginOptionsView()
             case .profileSetupRequired:
-            LoginOptionsView()
+                LoginOptionsView()
             case .completed:
-            MainView()
+                   MainView()
             case nil:
                 ProfileView()
             }

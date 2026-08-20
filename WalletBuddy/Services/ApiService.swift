@@ -17,8 +17,12 @@ enum APIError: Error{
     case encodingError
     case decodingError
     case networkError(Error)
+    case unauthorized
     case serverError(statusCode: Int, message: String?)
 }
+
+
+
 
 enum CheckoutError: Error {
     case invalidURL
@@ -34,61 +38,139 @@ final class ApiService {
     private init() {}
     
     //MARK: LOGIN/LOGOUT/STATE
-    func verifyUser(withToken token: String) async -> AppUser? {
-        //New parameters neeeded DeviceID
+    func verifyUser(withToken token: String) async -> Result<AppUser, APIError> {
+
         
         
-        print("Firebase Token: -> \(token)")
-        
-        guard let url = URL(string:Constants.checkInOrCreateEndPoint) else {
+        //URL
+        guard let url = URL(string: Constants.checkInOrCreateEndPoint) else {
             print("❌ Invalid URL")
-            return nil
+            return .failure(.invalidURL)
         }
-        
+
+
         var request = URLRequest(url: url)
+
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+        request.setValue("application/json",forHTTPHeaderField: "Content-Type")
+
+        request.setValue( "Bearer \(token)",forHTTPHeaderField: "Authorization")
+
+
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
+
+            let (data, response) = try await URLSession.shared.data(
+                for: request
+            )
+
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 print("❌ Invalid response")
-                return nil
+                return .failure(.serverError(statusCode: -1,message: "Invalid server response."))
             }
-            
+
+
             switch httpResponse.statusCode {
-            case 200:
+
+            // MARK: - Success
+
+            case 200...299:
+
                 do {
-                    
-                    
-                    let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    print("JSON -> \(json) ")
-                    let user = try JSONDecoder().decode(AppUser.self, from: data)
-                    return user
+
+                    let json = try JSONSerialization.jsonObject(
+                        with: data,
+                        options: []
+                    )
+
+                    print("JSON -> \(json)")
+
+
+                    let user = try JSONDecoder().decode(
+                        AppUser.self,
+                        from: data
+                    )
+
+                    return .success(user)
+
                 } catch {
-                    print("❌ Failed to decode AppUser: \(error)")
-                    return nil
+
+                    print(
+                        "❌ Failed to decode AppUser:",
+                        error
+                    )
+
+                    return .failure(.decodingError)
                 }
+
+
+            // MARK: - Unauthorized
+
             case 401:
-                print("⚠️ Unauthorized: Invalid or expired token")
+
+                print(
+                    "⚠️ Unauthorized: Invalid or expired token"
+                )
+
+                return .failure(.unauthorized)
+
+
+            // MARK: - Server Error
+
             case 500...599:
-                print("❌ Server error: \(httpResponse.statusCode)")
+
+                let message = String(
+                    data: data,
+                    encoding: .utf8
+                )
+
+                print(
+                    "❌ Server error:",
+                    httpResponse.statusCode
+                )
+
+                return .failure(
+                    .serverError(
+                        statusCode: httpResponse.statusCode,
+                        message: message
+                    )
+                )
+
+
+            // MARK: - Other Status Codes
+
             default:
-                // Optional: Try to print server error message
-                if let errorMessage = String(data: data, encoding: .utf8) {
-                    print("⚠️ Server responded with status \(httpResponse.statusCode): \(errorMessage)")
-                } else {
-                    print("⚠️ Unexpected status code: \(httpResponse.statusCode)")
-                }
+
+                let message = String(
+                    data: data,
+                    encoding: .utf8
+                )
+
+                print(
+                    "⚠️ Server responded with status:",
+                    httpResponse.statusCode
+                )
+
+                return .failure(
+                    .serverError(
+                        statusCode: httpResponse.statusCode,
+                        message: message
+                    )
+                )
             }
-            
+
+
         } catch {
-            print("❌ Network or decoding error: \(error.localizedDescription)")
+
+            print(
+                "❌ Network error:",
+                error.localizedDescription
+            )
+
+            return .failure(
+                .networkError(error)
+            )
         }
-        
-        return nil
     }
     
     //Admin registration + email verification email sent NOTE: move to AuthService.swift
@@ -270,9 +352,316 @@ final class ApiService {
         }
     }
         
+    //Resend email Verification Link
+    func resendEmailVerification(token: String) async -> Result<APIResponse, APIError>{
+        
+        guard let url = URL(string: Constants.resendEmailVerificationEndPoint) else {
+              return .failure(.invalidURL)
+          }
+
+          var request = URLRequest(url: url)
+          request.httpMethod = "POST"
+
+          request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+          request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+          do {
+
+              let (data, response) = try await URLSession.shared.data(for: request)
+
+              guard let httpResponse = response as? HTTPURLResponse else {
+                  return .failure(
+                      .serverError(
+                          statusCode: -1,
+                          message: "Invalid server response."
+                      )
+                  )
+              }
+
+              let decoder = JSONDecoder()
+
+              switch httpResponse.statusCode {
+
+              case 200...299:
+
+                  let apiResponse = try decoder.decode(APIResponse.self, from: data)
+                  return .success(apiResponse)
+
+              default:
+
+                  let errorResponse = try? decoder.decode(APIResponse.self, from: data)
+
+                  return .failure(
+                      .serverError(
+                          statusCode: httpResponse.statusCode,
+                          message: errorResponse?.message
+                      )
+                  )
+              }
+
+          } catch let decodingError as DecodingError {
+
+              print("Decoding Error:", decodingError)
+              return .failure(.decodingError)
+
+          } catch {
+
+              print("Network Error:", error.localizedDescription)
+              return .failure(.networkError(error))
+          }
+        
+        
+    }
     
-    
-                    
+    // MARK: - Create Organization
+    func createOrganization(
+        token: String,
+        name: String,
+        industry: String,
+        email: String,
+        phone: String?,
+        website: String?
+    ) async -> Result<CreateOrganizationResponse, APIError> {
+
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("🏢 CREATE ORGANIZATION REQUEST STARTED")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        // MARK: - URL
+        guard let url = URL(
+            string: Constants.createOrganizationEndPoint
+        ) else {
+
+            print("❌ Invalid create organization URL")
+            print("❌ URL String:", Constants.createOrganizationEndPoint)
+
+            return .failure(.invalidURL)
+        }
+
+        print("🌐 URL:", url.absoluteString)
+
+
+        // MARK: - Request
+        var request = URLRequest(url: url)
+
+        request.httpMethod = "POST"
+
+        request.setValue(
+            "application/json",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        request.setValue(
+            "Bearer \(token)",
+            forHTTPHeaderField: "Authorization"
+        )
+
+        print("📡 HTTP Method: POST")
+        print("🔐 Authorization header added")
+        // IMPORTANT: Do NOT print the actual token.
+
+
+        // MARK: - Request Body
+        let body = CreateOrganizationRequest(
+            name: name,
+            industry: industry,
+            email: email,
+            phone: phone,
+            website: website
+        )
+
+        print("📦 Organization Request:")
+        print("   Name:", name)
+        print("   Industry:", industry)
+        print("   Email:", email)
+        print("   Phone:", phone ?? "nil")
+        print("   Website:", website ?? "nil")
+
+
+        // MARK: - Encode Body
+        do {
+
+            request.httpBody = try JSONEncoder().encode(body)
+
+            print("✅ Request body encoded successfully")
+
+            // Print actual JSON being sent
+            if let httpBody = request.httpBody,
+               let jsonString = String(data: httpBody, encoding: .utf8) {
+
+                print("📤 JSON SENT TO SERVER:")
+                print(jsonString)
+            }
+
+        } catch {
+
+            print("❌ ORGANIZATION ENCODING ERROR")
+            print("❌ Error:", error)
+            print("❌ Description:", error.localizedDescription)
+
+            return .failure(.encodingError)
+        }
+
+
+        // MARK: - API Request
+        do {
+
+            print("🚀 Sending create organization request...")
+
+            let (data, response) = try await URLSession.shared.data(
+                for: request
+            )
+
+            print("📥 Server response received")
+
+
+            // MARK: - Validate HTTP Response
+            guard let httpResponse = response as? HTTPURLResponse else {
+
+                print("❌ INVALID HTTP RESPONSE")
+                print("❌ Response:", response)
+
+                return .failure(
+                    .serverError(
+                        statusCode: -1,
+                        message: "Invalid server response."
+                    )
+                )
+            }
+
+
+            // MARK: - Debug HTTP Response
+
+            print("📶 HTTP STATUS CODE:", httpResponse.statusCode)
+
+            // Print response body
+            if let rawResponse = String(data: data, encoding: .utf8) {
+
+                print("📥 RAW SERVER RESPONSE:")
+                print(rawResponse)
+
+            } else {
+
+                print("⚠️ Could not convert response data to String")
+                print("📦 Response data size:", data.count, "bytes")
+            }
+
+
+            let decoder = JSONDecoder()
+
+
+            // MARK: - Status Codes
+            switch httpResponse.statusCode {
+
+            // MARK: Success
+            case 200...299:
+
+                print("✅ CREATE ORGANIZATION REQUEST SUCCESSFUL")
+
+                do {
+
+                    let decodedResponse = try decoder.decode(
+                        CreateOrganizationResponse.self,
+                        from: data
+                    )
+
+                    print("✅ CreateOrganizationResponse decoded successfully")
+                    print("🏢 Organization response:", decodedResponse)
+
+                    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    print("🏁 CREATE ORGANIZATION COMPLETED")
+                    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+                    return .success(decodedResponse)
+
+                } catch {
+
+                    print("❌ ORGANIZATION DECODING ERROR")
+                    print("❌ Error:", error)
+                    print("❌ Description:", error.localizedDescription)
+
+                    if let decodingError = error as? DecodingError {
+
+                        switch decodingError {
+
+                        case .keyNotFound(let key, let context):
+                            print("❌ Missing key:", key.stringValue)
+                            print("❌ Context:", context.debugDescription)
+
+                        case .typeMismatch(let type, let context):
+                            print("❌ Type mismatch:", type)
+                            print("❌ Context:", context.debugDescription)
+
+                        case .valueNotFound(let type, let context):
+                            print("❌ Value not found:", type)
+                            print("❌ Context:", context.debugDescription)
+
+                        case .dataCorrupted(let context):
+                            print("❌ Data corrupted")
+                            print("❌ Context:", context.debugDescription)
+
+                        @unknown default:
+                            print("❌ Unknown decoding error")
+                        }
+                    }
+
+                    return .failure(.decodingError)
+                }
+
+
+            // MARK: Unauthorized
+            case 401:
+
+                print("🔐 UNAUTHORIZED")
+                print("❌ Server returned HTTP 401")
+                print("❌ Firebase token may be invalid or expired")
+
+                return .failure(.unauthorized)
+
+
+            // MARK: Backend Errors
+            default:
+
+                print("❌ SERVER ERROR")
+                print("❌ Status Code:", httpResponse.statusCode)
+
+                let errorResponse = try? decoder.decode(
+                    APIErrorResponse.self,
+                    from: data
+                )
+
+                if let errorResponse {
+
+                    print("❌ Backend error message:", errorResponse.message)
+
+                } else {
+
+                    print("⚠️ Could not decode APIErrorResponse")
+
+                    if let rawResponse = String(data: data, encoding: .utf8) {
+                        print("❌ Raw backend response:", rawResponse)
+                    }
+                }
+
+                return .failure(
+                    .serverError(
+                        statusCode: httpResponse.statusCode,
+                        message: errorResponse?.message
+                    )
+                )
+            }
+
+        } catch {
+
+            print("❌ NETWORK ERROR")
+            print("❌ Error:", error)
+            print("❌ Description:", error.localizedDescription)
+
+            return .failure(
+                .networkError(error)
+            )
+        }
+    }
     //MARK: -- ADMIN
     //MARK: -- EMPLOYEE
     //CHECKIN
@@ -309,6 +698,13 @@ final class ApiService {
                 return .failure(.serverError(statusCode: -1, message: "Invalid response"))
             }
             
+            //handle unauthorized
+     
+            if httpResponse.statusCode == 401{
+                return .failure(.unauthorized)
+            }
+            
+            //Handle other server errors 
             guard (200...299).contains(httpResponse.statusCode)else{
                 
                 if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self,from: data){
@@ -338,233 +734,281 @@ final class ApiService {
         }
   
     }
-    //CHECKOUT
-    func checkout(firebaseIDToken: String) async -> Result<String, APIError> {
+    //MARK: - CHECKOUT
+    // MARK: - CHECKOUT
+
+    func checkout(firebaseIDToken: String,latitude: Double,longitude: Double,device: DeviceCheckInInfo) async -> Result<APIResponse, APIError> {
+
         guard let url = URL(string: Constants.checkOutEndPoint) else {
             return .failure(.invalidURL)
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "PATCH"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("Bearer \(firebaseIDToken)", forHTTPHeaderField: "Authorization")
+        let body = CheckInRequest(
+            lat: latitude,
+            lng: longitude,
+            device: device
+        )
+
+        let httpBody: Data
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            httpBody = try JSONEncoder().encode(body)
+        } catch {
+            return .failure(.encodingError)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue(
+            "application/json",
+            forHTTPHeaderField: "Content-Type"
+        )
+        request.setValue(
+            "Bearer \(firebaseIDToken)",
+            forHTTPHeaderField: "Authorization"
+        )
+        request.httpBody = httpBody
+
+        do {
+            let (data, response) = try await URLSession.shared.data(
+                for: request
+            )
 
             guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
+                return .failure(
+                    .serverError(
+                        statusCode: 0,
+                        message: "Invalid response from server."
+                    )
+                )
             }
 
-            // Try to parse server message from response
-            var message: String? = nil
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                message = json["message"] as? String
+            if httpResponse.statusCode == 401 {
+                return .failure(.unauthorized)
             }
 
             switch httpResponse.statusCode {
-            case 200:
-                return .success(message ?? "Successfully checked out")
-            case 400, 404:
-                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
-            default:
-                return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
-            }
+            case 200...299:
+                do {
+                    let apiResponse = try JSONDecoder().decode(
+                        APIResponse.self,
+                        from: data
+                    )
 
+                    return .success(apiResponse)
+                } catch {
+                    print("Checkout decoding error:", error)
+                    print(
+                        "Server response:",
+                        String(data: data, encoding: .utf8) ?? "Invalid data"
+                    )
+
+                    return .failure(.decodingError)
+                }
+
+            default:
+                let errorResponse = try? JSONDecoder().decode(
+                    APIResponse.self,
+                    from: data
+                )
+
+                return .failure(
+                    .serverError(
+                        statusCode: httpResponse.statusCode,
+                        message: errorResponse?.message
+                    )
+                )
+            }
         } catch {
             return .failure(.networkError(error))
         }
     }
     //GET EMPLOYEE RECENT CHECKIN
     func fetchLastCheckin(token: String) async -> Result<CheckIn, APIError> {
-        
-        // 1️⃣ URL
-        guard let url = URL(string:Constants.getRecentCheckInEndPoint) else {
+
+        // 1️⃣ Create URL
+        guard let url = URL(string: Constants.getRecentCheckInEndPoint) else {
             print("❌ Invalid URL")
             return .failure(.invalidURL)
         }
-        
+
+        // 2️⃣ Create request
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        
+
+        request.setValue(
+            "Bearer \(token)",
+            forHTTPHeaderField: "Authorization"
+        )
+
         do {
-            // 2️⃣ Perform network request
+
+            // 3️⃣ Perform request
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            // 3️⃣ Validate HTTP response
+
+            // 4️⃣ Validate HTTP response
             guard let httpResponse = response as? HTTPURLResponse else {
-                print("❌ Invalid response object")
-                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+
+                return .failure(
+                    .serverError(
+                        statusCode: -1,
+                        message: "Invalid response"
+                    )
+                )
             }
-            
+
             print("📶 HTTP status code: \(httpResponse.statusCode)")
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                print("❌ Server returned error status: \(httpResponse.statusCode)")
-                
-                if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+
+            // 5️⃣ Handle HTTP status codes
+            switch httpResponse.statusCode {
+
+            case 200...299:
+                break
+
+            case 401:
+
+                print("❌ Unauthorized")
+
+                return .failure(.unauthorized)
+
+            default:
+
+                if let errorResponse =
+                    try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+
                     print("❌ Server error message: \(errorResponse.error)")
-                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: errorResponse.error))
+
+                    return .failure(
+                        .serverError(
+                            statusCode: httpResponse.statusCode,
+                            message: errorResponse.error
+                        )
+                    )
+
                 } else {
-                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+
+                    let message =
+                        String(data: data, encoding: .utf8)
+                        ?? "Unknown error"
+
                     print("❌ Server returned: \(message)")
-                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+
+                    return .failure(
+                        .serverError(
+                            statusCode: httpResponse.statusCode,
+                            message: message
+                        )
+                    )
                 }
             }
-            
-            // 4️⃣ Decode JSON into CheckIn
+
+            // 6️⃣ Decode successful response
             let decoder = JSONDecoder()
-            
-            // Custom DateFormatter to handle milliseconds and 'Z'
+
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             formatter.locale = Locale(identifier: "en_US_POSIX")
+
             decoder.dateDecodingStrategy = .formatted(formatter)
-            
+
             do {
+
                 let checkin = try decoder.decode(CheckIn.self, from: data)
+
                 return .success(checkin)
+
             } catch {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("❌ From fetchLastCheckin Decoding error. Raw JSON: \(jsonString)")
-                }
-                print("❌ Decoding error: \(error.localizedDescription)")
-                return .failure(.decodingError)
-            }
-            
-        } catch {
-            print("❌ Network error: \(error.localizedDescription)")
-            return .failure(.networkError(error))
-        }
-    }
-    //GET ALL Employees ON SITE
-    func fetchCheckedInUsers(token: String) async -> Result<[CheckedInUser], APIError> {
-        
-        // 1️⃣ URL
-        guard let url = URL(string: Constants.getAllEmployeesOnSiteEndPoint) else {
-            print("❌ Invalid URL")
-            return .failure(.invalidURL)
-        }
-        
-        print("➡️ Fetching checked-in users from URL: \(url)")
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
-        
-        do {
-            // 2️⃣ Perform network request
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            // 3️⃣ Validate HTTP response
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("❌ Invalid response object")
-                return .failure(.serverError(statusCode: -1, message: "Invalid response"))
-            }
-            
-            print("📶 HTTP status code: \(httpResponse.statusCode)")
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                print("❌ Server returned error status: \(httpResponse.statusCode)")
-                
-                if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                    print("❌ Server error message: \(errorResponse.error)")
-                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: errorResponse.error))
-                } else {
-                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
-                    print("❌ Server returned: \(message)")
-                    return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
-                }
-            }
-            
-            // 4️⃣ Decode JSON into [CheckedInUser]
-            let decoder = JSONDecoder()
-            do {
-                let users = try decoder.decode([CheckedInUser].self, from: data)
-                print("✅ Decoded CheckedInUsers: \(users)")
-                return .success(users)
-            } catch {
+
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("❌ Decoding error. Raw JSON: \(jsonString)")
                 }
+
                 print("❌ Decoding error: \(error.localizedDescription)")
+
                 return .failure(.decodingError)
             }
-            
+
         } catch {
+
             print("❌ Network error: \(error.localizedDescription)")
+
             return .failure(.networkError(error))
         }
     }
 
+    //GET ALL Employees ON SITE
+     func fetchCheckedInUsers(token: String) async -> Result<[CheckedInUser], APIError> {
+         
+         // 1️⃣ URL
+         guard let url = URL(string: Constants.getAllEmployeesOnSiteEndPoint) else {
+         
+             return .failure(.invalidURL)
+         }
+         
+
+         
+         var request = URLRequest(url: url)
+         request.httpMethod = "GET"
+         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+         
+ 
+         
+         do {
+             // 2️⃣ Perform network request
+             let (data, response) = try await URLSession.shared.data(for: request)
+             
+             // 3️⃣ Validate HTTP response
+             guard let httpResponse = response as? HTTPURLResponse else {
+          
+                 return .failure(.serverError(statusCode: -1, message: "Invalid response"))
+             }
+             
+             // MARK: - Handle Unauthorized
+                 if httpResponse.statusCode == 401 {
+                     print("❌ Unauthorized - token may be invalid or expired")
+                     return .failure(.unauthorized)
+                 }
+             
+             guard (200...299).contains(httpResponse.statusCode) else {
+              
+                 
+                 if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+          
+                     return .failure(.serverError(statusCode: httpResponse.statusCode, message: errorResponse.error))
+                 } else {
+                     let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+                 
+                     return .failure(.serverError(statusCode: httpResponse.statusCode, message: message))
+                 }
+             }
+             
+             // 4️⃣ Decode JSON into [CheckedInUser]
+             let decoder = JSONDecoder()
+             do {
+                 let users = try decoder.decode([CheckedInUser].self, from: data)
+       
+                 return .success(users)
+             } catch {
+                 if let jsonString = String(data: data, encoding: .utf8) {
+                     print("❌ Decoding error. Raw JSON: \(jsonString)")
+                 }
+                 print("❌ Decoding error: \(error.localizedDescription)")
+                 return .failure(.decodingError)
+             }
+             
+         } catch {
+             print("❌ Network error: \(error.localizedDescription)")
+             return .failure(.networkError(error))
+         }
+     }
+    
+    
+    
 //MARK: OTHER
     //Register Device with backend
     func sendDeviceInfoToAPI(device: Device, completion: @escaping (Result<Void, Error>) -> Void) {
         print("Data sent to API...")
     }
 
-  //Onboarding function
-    //Veryfy user with token
-    //Send onboarding step data
-    //FirstName and LastName
-    //updateOnboarding step to Complete
-    
-    
-    //Wherever called on Success call apppViewModel logginSuccess() to SYNC model and UI
-    
-    
-    
-  
-    
-    
-    //MARK: - Fetch Messages
-        
-//    func fetchMessasges(user1: String, user2:String)async -> Result<[Message], APIError>{
-//            
-//         //URL
-//        guard let url = URL("")else{
-//            print("Invalid URL")
-//            return .failure(.invalidURL)
-//        }
-//        
-//        do{
-//            //Create URLRequest if needed
-//            var request = URLRequest(url:url)
-//            request.httpMethod = "GET"
-//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//            
-//            
-//            //Perform network call
-//            let (data, response) = try await URLSession.shared.data(for: request)
-//            
-//            
-//            //Check HTTP response
-//            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200{
-//                print("Server returned status code:", httpResponse.statusCode)
-//                return .failure(.serverError(statusCode: 0, message: "Invalid response from server."))
-//            }
-//            
-//            
-//            //Decoding JSON
-//            let message = try JSONDecoder().decode([Message].self, from: data)
-//            return .success(message)
-//            
-//            
-//        }catch{
-//            print("Error fetching messafes:", error)
-//            return .failure(.decodingError)
-//        }
-//        
-//            
-//            
-//        }
-//
-    
-
-
-
+ 
 }

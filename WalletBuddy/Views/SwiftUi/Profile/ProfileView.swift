@@ -17,6 +17,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                
                 VStack(spacing: 24) {
                     
                     // MARK: - Profile Header
@@ -49,10 +50,7 @@ struct ProfileView: View {
                                         .fill(Color.secondary) // Gray background inside the circle
                                         .frame(width: 110, height: 110) // Slightly bigger than the icon
                                 )
-//                                .overlay(
-//                                    Circle()
-//                                        .stroke(Color.sportRoyal, lineWidth: 4) // Border matching the royal blue
-//                                )
+
                              
 
                         }
@@ -65,30 +63,81 @@ struct ProfileView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        Text(appViewModel.userSession.user?.email ?? "email@example.com")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
+                
+                        
+                        if let role = appViewModel.userSession.user?.role {
+                            Text(role.displayName)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color.amazingBlue)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Color.amazingBlue.opacity(0.10)
+                                )
+                                .clipShape(Capsule())
+                        }
+                        
+                        
+                        
+                        
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(.ultraThinMaterial)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(.secondarySystemGroupedBackground))
+                    )
                     .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                Color(.separator).opacity(0.18),
+                                lineWidth: 1
+                            )
+                    }
+
                     .padding(.horizontal)
                     
                     // MARK: - Information Section
-                    VStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Account")
+                            .font(.headline)
+                            .padding(.leading, 4)
                         
-                        NavigationLink(destination: UIDView(uid: appViewModel.userSession.user?.uid ?? "No UID ")){
-                            infoRow(label: "", value: "Account ID", icon: "person.text.rectangle")
+                        
+                    
+                        NavigationLink(destination: OrganizationDetailsView()){
+                            infoRow(label: "Organization", value: appViewModel.userSession.user?.organization?.name ?? "N/A", icon: "building.2.fill",  showChevron: true)
                         }
-                        
-                      
-                        
+                        .buttonStyle(.plain)
                         
                         
-                        infoRow(label: "Organization", value: appViewModel.userSession.user?.organization?.name ?? "N/A", icon: "building.2")
-                        infoRow(label: "Email Verified", value: appViewModel.userSession.user?.emailVerified ?? false ? "Yes" : "No", icon: "checkmark.seal")
+                        if let employeeId = appViewModel.userSession.user?.employeeId,
+                           !employeeId.isEmpty {
+                            
+                            infoRow(
+                                label: "Employee ID",
+                                value: employeeId,
+                                icon: "person.text.rectangle.fill",
+                                showChevron: false
+                            )
+                        }else{
+                            //TODO: Remove dummy data once backend supports employeeId
+                            infoRow(
+                                label: "Employee ID",
+                                value: "77368",
+                                icon: "person.text.rectangle.fill",
+                                showChevron: false
+                            )
+                        }
+
+                        NavigationLink(destination: UIDView(uid: appViewModel.userSession.user?.uid ?? "No UID ")){
+                            infoRow(label: "Account ID", value: "View ID", icon: "number.circle.fill", showChevron: true)
+                        }
+                        .buttonStyle(.plain)
+                       
+                
                         
                         
                         
@@ -96,32 +145,88 @@ struct ProfileView: View {
                     .padding(.horizontal)
                     
                     // MARK: - Contact Section
-                    VStack(spacing: 12) {
-                        infoRow(label: "Phone", value: "7185369221", icon: "phone.fill")
-                        infoRow(label: "Email", value: appViewModel.userSession.user?.email ?? "email@example.com", icon: "envelope.fill")
+               
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        
+                        Text("Contact Information")
+                            .font(.headline)
+                            .padding(.leading,4)
+                        infoRow(label: "Phone", value: "7185369221", icon: "phone.fill", showChevron: false)
+                        infoRow(label: "Email", value: appViewModel.userSession.user?.email ?? "email@example.com", icon: "envelope.fill",showChevron: false)
                     }
                     .padding(.horizontal)
                     
-
-                    // MARK: - Logout Button
-                    Button(action: { appViewModel.logout() }) {
-                        HStack {
-                            Image(systemName: "arrow.backward.square")
-                                .foregroundColor(.primary)
-                            Text("Log Out")
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.white.opacity(0.3)) // Card color
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(UIColor.systemBackground), lineWidth: 1)
-                        )
+//MARK: - Security Section
+                    
+                    VStack(alignment: .leading, spacing: 12){
+                        
+                        Text("Security")
+                            .font(.headline)
+                            .padding(.leading,4)
+                        
+                        infoRow(label: "Email Verified", value: appViewModel.userSession.user?.emailVerified ?? false ? "Yes" : "No", icon: "checkmark.seal.fill",  showChevron: false)
                         
                     }
+                    .padding(.horizontal)
+                    
+                    //MARK: - Legal Section
+                    
+                    // MARK: - Legal Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        
+                        Text("Legal")
+                            .font(.headline)
+                            .padding(.leading, 4)
+                        
+                        NavigationLink {
+                            //PrivacyPolicyView()
+                        } label: {
+                            infoRow(
+                                label: "Privacy Policy",
+                                value: "",
+                                icon: "hand.raised.fill",
+                                showChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        
+                        NavigationLink {
+                           // TermsOfServiceView()
+                        } label: {
+                            infoRow(
+                                label: "Terms of Service",
+                                value: "",
+                                icon: "doc.text.fill",
+                                showChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    
+                    
+                    
+                    // MARK: - Logout Button
+                    Button {
+                        appViewModel.logout()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                 
+                            
+                            Text("Log Out")
+                
+                                .fontWeight(.semibold)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.red)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.red.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
                     .padding(.horizontal)
                     .padding(.top, 8)
 
@@ -141,6 +246,7 @@ struct ProfileView: View {
                 .disabled(!networkMonitor.isConnected)
                 .opacity(networkMonitor.isConnected ? 1 : 0.5)
             }
+            .background(Color(.systemGroupedBackground)) //Background view color
             
             // MARK: - Offline Banner
             if !networkMonitor.isConnected {
@@ -163,27 +269,43 @@ struct ProfileView: View {
     
     // MARK: - Info Row Component
     @ViewBuilder
-    func infoRow(label: String, value: String, icon: String) -> some View {
+    func infoRow(label: String, value: String, icon: String, showChevron: Bool = false) -> some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.blue)
+                .foregroundColor(Color.amazingBlue)
                 .frame(width: 24)
             Text(label)
                 .fontWeight(.medium)
             Spacer()
             Text(value)
-                .foregroundColor(.primary)
+                .foregroundColor(.secondary)
+            
+            if showChevron {
+                       Image(systemName: "chevron.right")
+                           .font(.caption)
+                           .fontWeight(.semibold)
+                           .foregroundColor(.secondary)
+                   }
         }
         .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    Color(.separator).opacity(0.18),
+                    lineWidth: 1
+                )
+        }
+//        .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
     }
 }
 
 
 extension Color {
-    static let sportRoyal = Color(red: 0.0, green: 0.0, blue: 1.0) // Approximation of Sport Royal
+    static let amazingBlue = Color(red: 23/155, green: 108/255, blue: 174/255) // Citi app Blue Color 
 }
 extension Color {
     static let aj5Gray = Color(red: 210/255, green: 210/255, blue: 210/255) // light-medium gray

@@ -8,7 +8,7 @@ import SwiftUI
 
 struct UIDView: View {
     let uid: String  // property to hold the UID
-
+    @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(alignment: .leading) {
             Text(uid)
@@ -29,6 +29,19 @@ struct UIDView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .navigationTitle("Account ID")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.primary)
+                }
+            }
+        }
     }
 }
 

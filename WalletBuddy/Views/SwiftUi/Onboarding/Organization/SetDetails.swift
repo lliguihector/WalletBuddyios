@@ -7,14 +7,16 @@
 
 
     import SwiftUI
-    struct OrganizationInputView: View {
+
+    struct SetDetails: View {
 
         @EnvironmentObject var onboardingVM: AdminOnboardingViewModel
         @EnvironmentObject var appViewModel: AppViewModel
 
-        
+        @State private var navigateToOrganizationLocation = false
             //MARK: Piker List
         
+
         private let industries = [
             "Construction",
             "Education",
@@ -66,6 +68,15 @@
                         VStack(alignment: .leading, spacing: 16) {
                             
                             
+                            //MARK: - Organization Logo
+                            // MARK: - Organization Logo
+                            ImagePickerView(
+                                selectedImage: $onboardingVM.organizationLogo,
+                                type: .organization
+                            )
+                            
+                            
+                            
                             //MARK: Organization Name
                             VStack(alignment: .leading, spacing: 4) {
                                 CustomTextField(title: "Organization Name",
@@ -82,9 +93,6 @@
                                             .foregroundStyle(.red)
                                     }
                             }
-                            
-                        
-                            
                             
                             //MARK: Organization Inadustry Piker
                             VStack(alignment: .leading, spacing: 4) {
@@ -109,6 +117,13 @@
                                         .stroke(Color.secondary.opacity(0.7), lineWidth: 1)
                                     
                                 )
+                                if let error = onboardingVM.industryError{
+                                    Label(error, systemImage: "exclamationmark.circle.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.red)
+                                }
+                                
+                                
                             }
                             
 
@@ -158,7 +173,7 @@
                             CustomTextField(
                                 title: "Website (Optional)",
                                 text: $onboardingVM.organizationWebsiteUrl,
-                                keyboard: .numberPad,
+                                keyboard: .URL,
                                 systemImage: "globe"
                             )
                             .focused($focusedField, equals: .businessWebsiteUrl)
@@ -178,7 +193,13 @@
                             onboardingVM.showAlert = false
                             Task {
                                 
-                            //Do Something
+                                let success = await onboardingVM.registerOrganization()
+                                
+                                
+                                if success{
+                                    
+                                    navigateToOrganizationLocation = true
+                                }
                            
                             }
                             

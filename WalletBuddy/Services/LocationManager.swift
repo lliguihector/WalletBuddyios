@@ -14,7 +14,10 @@ class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocationMan
     
     private let manager = CLLocationManager()
     
-
+//Latest location received from core location
+    @Published private(set) var currentLocation: CLLocation?
+    
+    
     @Published var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), // Default SF
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -32,47 +35,66 @@ class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocationMan
         manager.distanceFilter = 10 //Only update if user moved 10 meters (avoiding spam)
         
         
-//        manager.distanceFilter = kCLDistanceFilterNone
-//        manager.requestWhenInUseAuthorization()
-//        manager.startUpdatingLocation()
     }
     
     
     
     //MARK: -- Location Permissions
     func requestWhenInUseAuthorization(){
-        manager.requestWhenInUseAuthorization()
         
-        if CLLocationManager.locationServicesEnabled(){
-            manager.startUpdatingLocation()
-        }else{
-            print("Location services are disabled.")
-        }
+        guard CLLocationManager.locationServicesEnabled() else {
+              print("Location services are disabled.")
+              return
+          }
+
+          switch manager.authorizationStatus {
+          case .notDetermined:
+              manager.requestWhenInUseAuthorization()
+
+          case .authorizedWhenInUse, .authorizedAlways:
+              manager.startUpdatingLocation()
+
+          case .denied, .restricted:
+              print("Location access denied or restricted.")
+
+          @unknown default:
+              break
+          }
+        
     }
     
-    //Stop updating location
-    func stopUpdatingLocation(){
+
+    func startUpdatingLocation(){
         manager.startUpdatingLocation()
     }
     
+    
+    func stopUpdatingLocation(){
+        manager.startUpdatingLocation()
+        
+    }
     //MARK: - Delegate Methods
     
     
     //Called whenever user's location updates
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        
-        
-        //Update the map region
-        self.region = MKCoordinateRegion(
-            center: location.coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
-        
-        //Emit location to whoever is listening (ViewModel)
-        
-        onLocationUpdate?(location)
-    }
+    func locationManager(
+         _ manager: CLLocationManager,
+         didUpdateLocations locations: [CLLocation]
+     ) {
+         guard let location = locations.last else { return }
+
+         // Store the latest complete CLLocation.
+         currentLocation = location
+
+         region = MKCoordinateRegion(
+             center: location.coordinate,
+             span: MKCoordinateSpan(
+                 latitudeDelta: 0.01,
+                 longitudeDelta: 0.01
+             )
+         )
+     }
+
     
 
     

@@ -88,9 +88,11 @@ struct VerifyEmail: View {
             .padding(.horizontal, 24)
       //MARK: Resend Email
             Button{
-                //TODO: Send another verification email
-                print("Verify email button Pressed")
                 
+                //TODO: RESEND Verification email
+                Task{
+                    await onboardingVM.resendEmailVerification()
+                }
                 
             }label:{
                 Text("Resend verification email")
@@ -127,7 +129,7 @@ struct VerifyEmail: View {
         }
         //MARK: Navigate to Next
         .navigationDestination(isPresented: $navigateToOrganization) {
-            OrganizationInputView()
+            SetDetails()
                 .environmentObject(onboardingVM)
                 .environmentObject(appViewModel)
          
@@ -171,9 +173,6 @@ struct VerifyEmail: View {
     }
 }
 
-#Preview {
-    VerifyEmail()
-}
 
 
 
